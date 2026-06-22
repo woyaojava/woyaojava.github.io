@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>404 · 捂五悟</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #dce8d5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: clamp(8rem, 30vw, 14rem);
+            font-weight: 700;
+            letter-spacing: 8px;
+            line-height: 1;
+            color: #2d4a2d;
+            user-select: none;
+            margin-bottom: 0.2rem;
+        }
+
+        .sub-text {
+            font-size: clamp(1rem, 2.5vw, 1.4rem);
+            font-weight: 300;
+            color: #3d5a3d;
+            letter-spacing: 2px;
+            line-height: 1.8;
+            margin-top: 0.5rem;
+            opacity: 0.85;
+        }
+
+        .sub-text .action-link {
+            color: #2d4a2d;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            text-decoration-thickness: 1.5px;
+            transition: color 0.2s, text-decoration-color 0.2s;
+        }
+
+        .sub-text .action-link:hover {
+            color: #1a3a1a;
+            text-decoration-color: #1a3a1a;
+        }
+
+        .sub-text .action-link:active {
+            transform: scale(0.97);
+        }
+
+        .footer-credit {
+            position: fixed;
+            bottom: 24px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: #5a7a5a;
+            letter-spacing: 2px;
+            opacity: 0.5;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: clamp(6rem, 25vw, 10rem);
+            }
+            .sub-text {
+                font-size: 0.9rem;
+                letter-spacing: 1px;
+            }
+            .footer-credit {
+                font-size: 0.6rem;
+                bottom: 16px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container fade-in">
+        <div class="main-title">404</div>
+        <p class="sub-text">
+            你似乎访问了一个不存在的页面。<br>
+            尝试 <span class="action-link" id="refreshLink">刷新页面</span> 或 <span class="action-link" id="homeLink">返回首页</span>
+        </p>
+    </div>
+
+    <div class="footer-credit">Powered by DeepSeek</div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            var refreshLink = document.getElementById('refreshLink');
+            var homeLink = document.getElementById('homeLink');
+
+            refreshLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.reload();
+            });
+
+            homeLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'https://woyaojava.github.io';
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
