@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>捂五悟 · 游戏</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 全局重置 — 适配老旧浏览器内核 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #dce8d5;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            align-items: center;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        /* 主容器：标题固定在上方 */
+        .container {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            align-items: center;
+            width: 100%;
+            max-width: 780px;
+            padding-top: 1.2rem;
+        }
+
+        .title-wrapper {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 2.5rem;
+        }
+
+        .main-title {
+            font-size: clamp(3.6rem, 12vw, 6rem);
+            font-weight: 700;
+            letter-spacing: 12px;
+            line-height: 1.15;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-wrap: wrap;
+            flex-wrap: wrap;
+            -webkit-justify-content: center;
+            justify-content: center;
+            gap: 0.1rem 1rem;
+            color: #2d4a2d;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .main-title span {
+            color: #2d4a2d;
+        }
+
+        .sub {
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            font-weight: 300;
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            color: #3d5a3d;
+            opacity: 0.6;
+            margin-top: 0.1rem;
+        }
+
+        /* 按钮容器 — 纵向排列，更清晰 */
+        .button-group {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            align-items: center;
+            gap: 1.2rem;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 0.5rem;
+        }
+
+        /* 按钮样式 — 无交互特效，纯色块 */
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.9rem 1.8rem;
+            border-radius: 60px;
+            background: rgba(45, 74, 45, 0.08);
+            border: 1.5px solid #2d4a2d;
+            color: #2d4a2d;
+            font-size: 1.05rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-decoration: none;
+            text-align: center;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            cursor: pointer;
+            -webkit-transition: none;
+            transition: none;
+            box-shadow: none;
+            word-break: break-word;
+        }
+
+        /* 完全去掉 hover / active 效果 */
+        .btn:hover,
+        .btn:active,
+        .btn:focus {
+            background: rgba(45, 74, 45, 0.08);
+            box-shadow: none;
+            -webkit-transform: none;
+            transform: none;
+        }
+
+        /* 底部 "Powered by DeepSeek" */
+        .footer-credit {
+            margin-top: 3rem;
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: #5a7a5a;
+            letter-spacing: 2px;
+            opacity: 0.5;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            pointer-events: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 480px) {
+            .main-title {
+                letter-spacing: 6px;
+            }
+            .sub {
+                letter-spacing: 8px;
+            }
+            .btn {
+                font-size: 0.9rem;
+                padding: 0.7rem 1.2rem;
+            }
+            .button-group {
+                gap: 1rem;
+            }
+            .container {
+                padding-top: 0.8rem;
+            }
+            .title-wrapper {
+                margin-bottom: 1.8rem;
+            }
+        }
+
+        .fade-in {
+            -webkit-animation: fadeUp 0.7s ease forwards;
+            animation: fadeUp 0.7s ease forwards;
+        }
+
+        @-webkit-keyframes fadeUp {
+            0% { opacity: 0; -webkit-transform: translateY(12px); transform: translateY(12px); }
+            100% { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            0% { opacity: 0; -webkit-transform: translateY(12px); transform: translateY(12px); }
+            100% { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container fade-in">
+        <!-- 标题固定在上方 -->
+        <div class="title-wrapper">
+            <h1 class="main-title">
+                <span>捂</span>
+                <span>五</span>
+                <span>悟</span>
+            </h1>
+            <div class="sub">· 游 戏 入 口 ·</div>
+        </div>
+
+        <!-- 两个功能按钮 -->
+        <div class="button-group">
+            <a href="https://woyaojava.github.io/questionmarkmystery" target="_blank" class="btn">问号秘境</a>
+            <a href="https://woyaojava.github.io/xiaojiguolnchestn" target="_blank" class="btn">打小鸡裹 lnchestn</a>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer-credit">Powered by DeepSeek</div>
+    </div>
+
+</body>
+  </html>
