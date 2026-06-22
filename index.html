@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* 全局重置 — 适配老旧浏览器内核 */
+        /* 全局重置 */
         * {
             margin: 0;
             padding: 0;
@@ -19,49 +19,42 @@
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             min-height: 100vh;
             background: #dce8d5;
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-direction: column;
-            flex-direction: column;
-            -webkit-align-items: center;
             align-items: center;
-            -webkit-justify-content: center;
             justify-content: center;
-            padding: 0;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
 
+        /* 主容器 — 固定定位，脱离文档流 */
         .container {
-            display: -webkit-flex;
-            display: flex;
-            -webkit-flex-direction: column;
-            flex-direction: column;
-            -webkit-align-items: center;
-            align-items: center;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             width: 100%;
             max-width: 780px;
             padding: 1.5rem;
-            -webkit-transform: translateY(0);
-            transform: translateY(0);
-            -webkit-transition: -webkit-transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: top 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+                        transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: top, transform;
         }
 
-        /* 上移：留出顶部空白 */
+        /* 上移状态：贴顶留白 20px */
         .container.shifted {
-            -webkit-transform: translateY(calc(-50vh + 120px + 8vh));
-            transform: translateY(calc(-50vh + 120px + 8vh));
+            top: 20px;
+            transform: translateX(-50%);
         }
 
         .title-wrapper {
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-direction: column;
             flex-direction: column;
-            -webkit-align-items: center;
             align-items: center;
             width: 100%;
-            -webkit-transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
@@ -70,17 +63,12 @@
             font-weight: 700;
             letter-spacing: 14px;
             line-height: 1.15;
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-wrap: wrap;
             flex-wrap: wrap;
-            -webkit-justify-content: center;
             justify-content: center;
             gap: 0.1rem 1.2rem;
             color: #2d4a2d;
-            -webkit-user-select: none;
             user-select: none;
-            -webkit-transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
@@ -96,31 +84,25 @@
             color: #3d5a3d;
             opacity: 0.7;
             margin-top: 0.1rem;
-            -webkit-transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         /* 按钮容器 */
         .button-grid {
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-wrap: wrap;
             flex-wrap: wrap;
-            -webkit-justify-content: center;
             justify-content: center;
             gap: 0.8rem 1.2rem;
             margin-top: 2.2rem;
             width: 100%;
             max-width: 550px;
             opacity: 0;
-            -webkit-transform: translateY(12px);
             transform: translateY(12px);
-            -webkit-transition: opacity 0.5s ease 0.7s, -webkit-transform 0.5s ease 0.7s;
             transition: opacity 0.5s ease 0.7s, transform 0.5s ease 0.7s;
             pointer-events: none;
         }
 
-        /* 按钮 — 完全无效果，纯色块 */
+        /* 按钮 — 无特效 */
         .btn {
             display: inline-block;
             padding: 0.6rem 1.6rem;
@@ -135,34 +117,30 @@
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             cursor: pointer;
             text-align: center;
-            -webkit-flex: 1 0 auto;
             flex: 1 0 auto;
             min-width: 100px;
             max-width: 160px;
-            -webkit-transition: none;
             transition: none;
             box-shadow: none;
         }
 
-        /* 完全去掉 hover / active 效果 */
+        /* 完全去掉交互效果 */
         .btn:hover,
         .btn:active,
         .btn:focus {
             background: rgba(45, 74, 45, 0.10);
             box-shadow: none;
-            -webkit-transform: none;
             transform: none;
         }
 
-        /* 上移后按钮区域可见 */
+        /* 上移后按钮可见 */
         .container.shifted .button-grid {
             opacity: 1;
-            -webkit-transform: translateY(0);
             transform: translateY(0);
             pointer-events: auto;
         }
 
-        /* 上移后标题缩小 */
+        /* 上移后标题略微缩小 */
         .container.shifted .main-title {
             font-size: clamp(2.8rem, 8vw, 4.6rem);
             letter-spacing: 8px;
@@ -175,7 +153,7 @@
             margin-top: 0.2rem;
         }
 
-        /* 底部 "Powered by DeepSeek" — 纯文字 */
+        /* 底部 "Powered by DeepSeek" — 固定于底部 */
         .footer-credit {
             position: fixed;
             bottom: 24px;
@@ -189,6 +167,7 @@
             opacity: 0.55;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             pointer-events: none;
+            z-index: 10;
         }
 
         /* 响应式 */
@@ -206,8 +185,7 @@
                 letter-spacing: 6px;
             }
             .container.shifted {
-                -webkit-transform: translateY(calc(-50vh + 80px + 6vh));
-                transform: translateY(calc(-50vh + 80px + 6vh));
+                top: 12px; /* 移动端留白稍小 */
             }
             .footer-credit {
                 font-size: 0.6rem;
@@ -224,25 +202,8 @@
             }
         }
 
-        .button-grid {
-            display: -webkit-box;
-            display: -moz-box;
-            display: -webkit-flex;
-            display: flex;
-            -webkit-flex-wrap: wrap;
-            flex-wrap: wrap;
-            -webkit-justify-content: center;
-            justify-content: center;
-        }
-
         .fade-in {
-            -webkit-animation: fadeUp 0.9s ease forwards;
             animation: fadeUp 0.9s ease forwards;
-        }
-
-        @-webkit-keyframes fadeUp {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
         }
 
         @keyframes fadeUp {
@@ -265,9 +226,7 @@
 
         <!-- 5个按钮 -->
         <div class="button-grid" id="buttonGrid">
-            <!-- 按钮一：游戏，已绑定链接 -->
-            <a href="https://woyaojava.github.io/games/" target="_blank" class="btn" id="btn1">游戏</a>
-            <!-- 其余按钮为占位 -->
+            <a href="https://woyaojava.github.io/game/" target="_blank" class="btn" id="btn1">游戏</a>
             <a href="#" class="btn" id="btn2">按钮二</a>
             <a href="#" class="btn" id="btn3">按钮三</a>
             <a href="#" class="btn" id="btn4">按钮四</a>
@@ -275,7 +234,7 @@
         </div>
     </div>
 
-    <!-- 底部纯文字 -->
+    <!-- 底部 -->
     <div class="footer-credit">Powered by DeepSeek</div>
 
     <script>
@@ -288,6 +247,7 @@
             var btn4 = document.getElementById('btn4');
             var btn5 = document.getElementById('btn5');
 
+            // 确保初始状态居中
             container.classList.remove('shifted');
 
             window.addEventListener('load', function() {
@@ -296,22 +256,19 @@
                 }, 500);
             });
 
-            // 按钮二至五为占位，点击提示
+            // 占位按钮
             btn2.addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('按钮二功能待添加');
             });
-
             btn3.addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('按钮三功能待添加');
             });
-
             btn4.addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('按钮四功能待添加');
             });
-
             btn5.addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('按钮五功能待添加');
