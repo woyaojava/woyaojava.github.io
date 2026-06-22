@@ -2,339 +2,460 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>打小鸡裹lnchestn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>捂五悟Website</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; height: 100vh; overflow: hidden; background: #f0f0f0; }
-        #gameContainer {
-            position: relative; width: 100vw; height: 100vh;
-            background: #e8f5e9;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *:focus, *:focus-visible { outline: none !important; }
+
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #dce8d5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
-            touch-action: none; 
+            margin: 0;
+            padding: 0;
         }
-        #ui {
-            position: absolute; top: 20px; left: 0; width: 100%;
-            display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box;
-            z-index: 999;
+
+        .container {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            /* 使用 transform 控制位置，避免 top 动画触发布局 */
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 780px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: transform;
+            z-index: 10;
+            pointer-events: none;
         }
-        #ui div {
-            background: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 8px; font-size: 22px; font-weight: bold;
+        .container * {
+            pointer-events: auto;
         }
-        #startBtn {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            padding: 15px 40px; font-size: 24px; font-weight: bold;
-            background: #ff4757; color: white; border: none; border-radius: 10px; cursor: pointer; z-index: 999;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-            transition: 0.2s;
+
+        /* 上移：调整 translate 的 Y 值，向上移动 */
+        .container.shifted {
+            transform: translate(-50%, calc(-50% + 20px)); /* 从视口中心向上移动，最终顶部留白 */
+            /* 实际偏移量需根据标题高度微调，这里以 20px 为顶部留白，但需要计算标题自身高度 */
+            /* 更精确：使用 calc(-50% + 偏移) 但偏移量需结合标题大小，我们使用 vh 单位更可靠 */
+            /* 改为：向上移动视口高度的一半再减去标题占用空间 */
+            transform: translate(-50%, calc(-50% + 20px - 50vh + 标题高度));
+            /* 但标题高度是动态的，我们改用固定偏移：直接上移到顶部 */
+            /* 简单方式：用 vh 和 rem 组合 */
+            transform: translate(-50%, calc(-50vh + 80px));
+            /* 这样标题会从中心移动到顶部，留出约 80px 空白 */
         }
-        #startBtn:hover { transform: translate(-50%, -50%) scale(1.05); }
-        .game-item {
-            position: absolute; 
-            width: 120px; 
-            height: 120px; 
+
+        /* 更稳妥的：使用 top 配合 transform，但 top 可能卡，只用 transform 平移 */
+        /* 我们使用固定定位，left:50%; top:50%; 然后 transform: translate(-50%, -50%) 居中 */
+        /* 上移时变换为 translate(-50%, -100% + 20px) 等，但为了留白，我们用 calc(-50vh + 80px) */
+        /* 更好的方式：用 translateY 单独控制 */
+        .container.shifted {
+            transform: translate(-50%, calc(-50vh + 80px));
+            /* 从视口中心移动到距顶部 80px 处 */
+            /* 这样不依赖 top 属性，完全由 transform 驱动，GPU加速 */
+        }
+
+        .title-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .main-title {
+            font-size: clamp(4.2rem, 16vw, 8rem);
+            font-weight: 700;
+            letter-spacing: 14px;
+            line-height: 1.15;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.1rem 1.2rem;
+            color: #2d4a2d;
+            user-select: none;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .main-title span { color: #2d4a2d; cursor: default; }
+        .main-title .clickable-悟 {
             cursor: pointer;
-            background-size: cover; background-position: center; background-repeat: no-repeat;
-            border-radius: 12px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
-            -webkit-user-drag: none; user-drag: none; outline: none;
-            -webkit-tap-highlight-color: transparent; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        .main-title .clickable-悟:hover,
+        .main-title .clickable-悟:active {
+            color: inherit;
+            text-shadow: none;
+            transform: none;
         }
 
-        /* ========== 【内嵌弹窗样式】 ========== */
-        #customModal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: none; 
-            justify-content: center; align-items: center;
-            z-index: 9999;
-            backdrop-filter: blur(4px);
+        .sub {
+            font-size: clamp(0.8rem, 2.2vw, 1.2rem);
+            font-weight: 300;
+            letter-spacing: 14px;
+            text-transform: uppercase;
+            color: #3d5a3d;
+            opacity: 0.7;
+            margin-top: 0.1rem;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .modal-content {
-            background: #ffffff; width: 85%; max-width: 380px;
-            border-radius: 20px; padding: 25px; box-sizing: border-box;
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .modal-content h2 { margin: 0 0 15px 0; font-size: 22px; color: #333; }
-        .modal-content img {
-            width: 100%; max-width: 200px; border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px; 
-            display: block; margin-left: auto; margin-right: auto;
-        }
-        .modal-content .final-score {
-            font-size: 40px; font-weight: bold; color: #ff4757; margin: 10px 0;
-        }
-        .modal-content .share-text {
-            background: #f1f3f5; padding: 10px; border-radius: 8px;
-            font-size: 14px; color: #555; text-align: left; margin-bottom: 15px;
-            word-break: break-all; line-height: 1.5; border: 1px solid #e9ecef;
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-        .modal-content .share-text.show { opacity: 1; }
-        .modal-actions {
-            display: flex; gap: 10px; margin-top: 10px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        .modal-actions.show { opacity: 1; }
-        .modal-actions button {
-            flex: 1; padding: 12px; border: none; border-radius: 12px;
-            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
-        }
-        .btn-restart { background: #f1f3f5; color: #333; }
-        .btn-restart:hover { background: #e9ecef; }
-        .btn-share { background: #ff4757; color: white; }
-        .btn-share:hover { background: #e03e4e; transform: scale(1.02); }
-        .btn-share:active { transform: scale(0.95); }
 
-        /* ========== 【内嵌提示条样式】 ========== */
-        #toastMsg {
-            position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); color: white;
-            padding: 12px 24px; border-radius: 30px; font-size: 16px; font-weight: bold;
-            z-index: 99999;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            white-space: nowrap;
+        .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem 1.2rem;
+            margin-top: 2.2rem;
+            width: 100%;
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.5s ease 0.7s, transform 0.5s ease 0.7s;
+            pointer-events: none;
         }
-        #toastMsg.show { opacity: 1; pointer-events: auto; }
+
+        .btn {
+            display: inline-block;
+            padding: 0.9rem 2.2rem;
+            border-radius: 60px;
+            background: rgba(45, 74, 45, 0.10);
+            border: 1.5px solid #2d4a2d;
+            color: #2d4a2d;
+            font-size: 1.15rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-decoration: none;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            cursor: pointer;
+            text-align: center;
+            flex: 1 0 auto;
+            min-width: 130px;
+            max-width: 200px;
+            transition: transform 0.12s, background 0.12s, opacity 0.5s ease;
+            box-shadow: none;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .btn:hover {
+            background: rgba(45, 74, 45, 0.10);
+            transform: none;
+        }
+        .btn.pressed {
+            transform: scale(0.93);
+            background: rgba(45, 74, 45, 0.30);
+        }
+        .btn-hidden {
+            display: none;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .btn-hidden.show {
+            display: inline-block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .container.shifted .button-grid {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .container.shifted .main-title {
+            font-size: clamp(2.8rem, 8vw, 4.6rem);
+            letter-spacing: 8px;
+            gap: 0.1rem 0.6rem;
+        }
+        .container.shifted .sub {
+            font-size: clamp(0.6rem, 1.6vw, 0.9rem);
+            letter-spacing: 8px;
+            margin-top: 0.2rem;
+        }
+
+        .footer-credit {
+            position: fixed;
+            bottom: 24px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: #5a7a5a;
+            letter-spacing: 2px;
+            opacity: 0.55;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        #poop-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .poop {
+            position: absolute;
+            font-size: 2.2rem;
+            line-height: 1;
+            user-select: none;
+            pointer-events: auto;
+            cursor: grab;
+            will-change: transform;
+            transition: none;
+            touch-action: none;
+        }
+        .poop:active {
+            cursor: grabbing;
+        }
+
+        @media (max-width: 480px) {
+            .main-title { letter-spacing: 6px; }
+            .sub { letter-spacing: 8px; }
+            .container.shifted .main-title { letter-spacing: 4px; }
+            .container.shifted .sub { letter-spacing: 6px; }
+            .container.shifted {
+                transform: translate(-50%, calc(-50vh + 60px));
+            }
+            .footer-credit { font-size: 0.6rem; bottom: 16px; }
+            .btn {
+                font-size: 1rem;
+                padding: 0.7rem 1.6rem;
+                min-width: 100px;
+                max-width: 160px;
+            }
+            .button-grid {
+                gap: 0.6rem 0.9rem;
+                max-width: 100%;
+            }
+            .poop {
+                font-size: 1.8rem;
+            }
+        }
+
+        .fade-in { animation: fadeUp 0.9s ease forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="ui">
-            <div id="scoreDisplay">得分: 0</div>
-            <div id="timerDisplay">时间: 30s</div>
+    <div class="container fade-in" id="container">
+        <div class="title-wrapper">
+            <h1 class="main-title">
+                <span>捂</span>
+                <span>五</span>
+                <span class="clickable-悟" id="clickableWu">悟</span>
+            </h1>
+            <div class="sub">· wu · wu · wu ·</div>
         </div>
-        <button id="startBtn">开始游戏</button>
-    </div>
-
-    <!-- 弹窗结构 -->
-    <div id="customModal">
-        <div class="modal-content">
-            <h2>🎉 时间到！</h2>
-            <img id="resultImg" src="1.jpg" alt="成绩图">
-            <div class="final-score" id="resultScore">0 分</div>
-            <div class="share-text" id="shareTextPreview">我在打小鸡裹lnchestn中获得了0分，你也来试试吧！</div>
-            <div class="modal-actions" id="modalActions">
-                <button class="btn-restart" id="restartBtn">再来一局</button>
-                <button class="btn-share" id="shareBtn">📋 复制分享</button>
-            </div>
+        <div class="button-grid" id="buttonGrid">
+            <a href="https://woyaojava.github.io/game/" target="_blank" class="btn" id="btn1">游戏</a>
+            <a href="#" class="btn" id="btn2">按钮二</a>
+            <a href="#" class="btn" id="btn3">按钮三</a>
+            <a href="#" class="btn" id="btn4">按钮四</a>
+            <a href="#" class="btn" id="btn5">按钮五</a>
+            <a href="https://github.com/woyaojava/woyaojava.github.io" target="_blank" class="btn btn-hidden" id="btn6">代码（史山）</a>
         </div>
     </div>
-
-    <!-- 提示条结构 -->
-    <div id="toastMsg"></div>
+    <div id="poop-container"></div>
+    <div class="footer-credit">Powered by DeepSeek</div>
 
     <script>
-        const container = document.getElementById('gameContainer');
-        const startBtn = document.getElementById('startBtn');
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const timerDisplay = document.getElementById('timerDisplay');
-        
-        const modal = document.getElementById('customModal');
-        const resultScore = document.getElementById('resultScore');
-        const shareTextPreview = document.getElementById('shareTextPreview');
-        const modalActions = document.getElementById('modalActions');
-        const restartBtn = document.getElementById('restartBtn');
-        const shareBtn = document.getElementById('shareBtn');
-        const toastMsg = document.getElementById('toastMsg');
-        
-        let score = 0;
-        let timeLeft = 30;
-        let timerInterval = null;
-        let items = [];
-        let audio = null;
-        let audioStarted = false;
-
-        // ========== 【环境检测】 ==========
-        function isWebEnvironment() {
-            if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return false;
-            const ua = navigator.userAgent.toLowerCase();
-            const webviewKeywords = ['micromessenger', 'qq', 'weibo', 'dingtalk', 'ucbrowser', 'quark'];
-            for (let key of webviewKeywords) {
-                if (ua.includes(key)) return false;
-            }
-            return true;
-        }
-        const canShare = isWebEnvironment();
-
-        // ========== 【音乐逻辑】 ==========
-        function initAudio() {
-            if (audio) return;
-            audio = new Audio('1.mp3');
-            audio.loop = true;
-            audio.volume = 0.4; 
-        }
-        function wakeUpMusic() {
-            if (audio && audio.paused && !audioStarted) {
-                audio.play().then(() => { audioStarted = true; });
-                document.removeEventListener('pointerdown', wakeUpMusic);
-            }
-        }
-        window.onload = function() { 
-            initAudio();
-            document.addEventListener('pointerdown', wakeUpMusic);
-        };
-
-        // ========== 【内嵌提示条功能】 ==========
-        function showToast(text, isSuccess = true) {
-            toastMsg.textContent = text;
-            toastMsg.style.background = isSuccess ? 'rgba(46, 204, 113, 0.9)' : 'rgba(231, 76, 60, 0.9)';
-            toastMsg.classList.add('show');
-            clearTimeout(window.toastTimer);
-            window.toastTimer = setTimeout(() => {
-                toastMsg.classList.remove('show');
-            }, 3000);
-        }
-
-        // ========== 【游戏逻辑】 ==========
-        function getRandomPosition() {
-            const size = 120;
-            const x = Math.random() * (container.clientWidth - size);
-            const y = Math.random() * (container.clientHeight - size);
-            return { x, y };
-        }
-        function smoothMove(element, targetX, targetY, duration = 400) {
-            const startX = parseFloat(element.style.left);
-            const startY = parseFloat(element.style.top);
-            const startTime = performance.now();
-            function animate(time) {
-                const elapsed = time - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const ease = 1 - Math.pow(1 - progress, 3);
-                element.style.left = (startX + (targetX - startX) * ease) + 'px';
-                element.style.top = (startY + (targetY - startY) * ease) + 'px';
-                if (progress < 1) requestAnimationFrame(animate);
-            }
-            requestAnimationFrame(animate);
-        }
-        function createCat() {
-            const div = document.createElement('div');
-            div.className = 'game-item';
-            div.style.backgroundImage = 'url(1.jpg)'; 
-            div.setAttribute('draggable', 'false');
-            const initPos = getRandomPosition();
-            div.style.left = initPos.x + 'px';
-            div.style.top = initPos.y + 'px';
-            div.addEventListener('pointerdown', function(e) {
-                e.preventDefault();
-                score++;
-                scoreDisplay.textContent = '得分: ' + score;
-                const newPos = getRandomPosition();
-                smoothMove(this, newPos.x, newPos.y);
+        (function() {
+            var container = document.getElementById('container');
+            container.classList.remove('shifted');
+            window.addEventListener('load', function() {
+                setTimeout(function() { container.classList.add('shifted'); }, 500);
             });
-            container.appendChild(div);
-            items.push(div);
-        }
-        function startGame() {
-            if (audio) {
-                if (audio.paused) { audio.play(); audioStarted = true; }
-                audio.volume = 1.0; 
-            }
-            clearInterval(timerInterval);
-            items.forEach(item => item.remove());
-            items = [];
-            score = 0;
-            timeLeft = 30;
-            scoreDisplay.textContent = '得分: 0';
-            timerDisplay.textContent = '时间: 30s';
-            startBtn.style.display = 'none';
 
-            for (let i = 0; i < 5; i++) createCat();
+            // ---- 彩蛋逻辑 ----
+            var clickableWu = document.getElementById('clickableWu');
+            var btn6 = document.getElementById('btn6');
+            var clickCount = 0;
+            var firstClickTime = 0;
+            var unlocked = false;
+            var timer = null;
 
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = '时间: ' + timeLeft + 's';
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    endGame();
+            function resetChallenge() {
+                clickCount = 0;
+                firstClickTime = 0;
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
                 }
-            }, 1000);
-        }
-        function endGame() {
-            items.forEach(item => item.remove());
-            items = [];
-            
-            startBtn.style.display = 'block';
-            startBtn.style.opacity = '0';
-            startBtn.style.pointerEvents = 'none';
-
-            resultScore.textContent = score + ' 分';
-            const shareText = "我在打小鸡裹lnchestn中获得了" + score + "分，你也来试试吧！";
-            shareTextPreview.textContent = shareText;
-
-            modalActions.classList.remove('show');
-            shareTextPreview.classList.remove('show');
-            modal.style.display = 'flex';
-
-            setTimeout(() => {
-                shareTextPreview.classList.add('show');
-                modalActions.classList.add('show');
-                
-                if (!canShare) {
-                    shareBtn.style.display = 'none';
-                    restartBtn.style.flex = '1';
-                    restartBtn.style.width = '100%';
-                } else {
-                    shareBtn.style.display = 'block';
-                    restartBtn.style.flex = '1';
-                    shareBtn.style.flex = '1';
-                }
-            }, 1000);
-        }
-
-        // ========== 【弹窗按钮交互】 ==========
-        restartBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-            if (audio) { audio.volume = 0.4; }
-            startBtn.style.opacity = '1';
-            startBtn.style.pointerEvents = 'auto';
-            shareBtn.style.display = '';
-            restartBtn.style.flex = '';
-            restartBtn.style.width = '';
-        });
-
-        shareBtn.addEventListener('click', async function() {
-            if (!canShare) {
-                showToast('❌ 当前环境不支持复制功能', false);
-                return;
             }
-            const textToCopy = shareTextPreview.textContent;
-            if (navigator.clipboard && window.isSecureContext) {
-                try {
-                    await navigator.clipboard.writeText(textToCopy);
-                    showToast('✅ 复制成功！快分享给朋友吧~', true);
+
+            function handleWuClick(e) {
+                if (unlocked) return;
+                var now = Date.now();
+                if (clickCount === 0) firstClickTime = now;
+                if (now - firstClickTime > 3000) {
+                    resetChallenge();
+                    clickCount = 1;
+                    firstClickTime = now;
+                    if (timer) clearTimeout(timer);
+                    timer = setTimeout(function() { resetChallenge(); timer = null; }, 3000);
                     return;
-                } catch (err) { console.warn('Clipboard API 失败:', err); }
+                }
+                clickCount++;
+                if (clickCount >= 10) {
+                    unlocked = true;
+                    btn6.classList.add('show');
+                    clickableWu.style.cursor = 'default';
+                    clickableWu.onclick = null;
+                    if (timer) { clearTimeout(timer); timer = null; }
+                    createPoops();
+                    return;
+                }
+                if (timer) { clearTimeout(timer); timer = null; }
+                var remaining = 3000 - (now - firstClickTime);
+                if (remaining > 0) {
+                    timer = setTimeout(function() { resetChallenge(); timer = null; }, remaining);
+                }
             }
-            const textArea = document.createElement('textarea');
-            textArea.value = textToCopy;
-            textArea.style.position = 'fixed';
-            textArea.style.opacity = '0';
-            textArea.style.left = '-9999px';
-            textArea.style.top = '-9999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) showToast('✅ 复制成功！快分享给朋友吧~', true);
-                else showToast('❌ 复制失败，请长按下方文字手动复制。', false);
-            } catch (err) {
-                showToast('❌ 复制失败，请长按下方文字手动复制。', false);
-            }
-            document.body.removeChild(textArea);
-        });
+            clickableWu.addEventListener('click', handleWuClick);
 
-        startBtn.onclick = startGame;
+            // ---- 按钮点击特效 ----
+            var buttons = document.querySelectorAll('.btn');
+            buttons.forEach(function(btn) {
+                btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
+                btn.addEventListener('mouseup', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('mouseleave', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('touchstart', function(e) { this.classList.add('pressed'); }, { passive: true });
+                btn.addEventListener('touchend', function(e) { this.classList.remove('pressed'); }, { passive: true });
+                btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
+            });
+
+            // ---- 占位按钮 ----
+            var btn2 = document.getElementById('btn2');
+            var btn3 = document.getElementById('btn3');
+            var btn4 = document.getElementById('btn4');
+            var btn5 = document.getElementById('btn5');
+            function delayedAlert(msg) { setTimeout(function() { alert(msg); }, 180); }
+            btn2.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮二功能待添加'); });
+            btn3.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮三功能待添加'); });
+            btn4.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮四功能待添加'); });
+            btn5.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮五功能待添加'); });
+
+            // ---- 物理引擎 + 拖拽 ----
+            function createPoops() {
+                var container = document.getElementById('poop-container');
+                var poops = [];
+                var count = 15;
+                var gravity = 0.25;
+                var damping = 0.85;
+                var friction = 0.99;
+
+                for (var i = 0; i < count; i++) {
+                    var el = document.createElement('div');
+                    el.className = 'poop';
+                    el.textContent = '💩';
+                    var size = 1.6 + Math.random() * 1.8;
+                    el.style.fontSize = size + 'rem';
+                    var w = window.innerWidth;
+                    var h = window.innerHeight;
+                    var x = Math.random() * (w - 60);
+                    var y = Math.random() * (h - 60);
+                    el.style.left = x + 'px';
+                    el.style.top = y + 'px';
+                    container.appendChild(el);
+
+                    var radius = size * 16;
+                    var obj = {
+                        el: el,
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 4 - 2,
+                        radius: radius,
+                        size: size,
+                        isDragging: false,
+                        dragOffsetX: 0,
+                        dragOffsetY: 0
+                    };
+                    poops.push(obj);
+
+                    // ---- 拖拽事件 ----
+                    (function(p) {
+                        function onStart(e) {
+                            e.preventDefault();
+                            var touch = e.touches ? e.touches[0] : e;
+                            var rect = p.el.getBoundingClientRect();
+                            p.dragOffsetX = touch.clientX - rect.left;
+                            p.dragOffsetY = touch.clientY - rect.top;
+                            p.isDragging = true;
+                            p.vx = 0;
+                            p.vy = 0;
+                        }
+                        function onMove(e) {
+                            if (!p.isDragging) return;
+                            e.preventDefault();
+                            var touch = e.touches ? e.touches[0] : e;
+                            var newX = touch.clientX - p.dragOffsetX;
+                            var newY = touch.clientY - p.dragOffsetY;
+                            var w = window.innerWidth;
+                            var h = window.innerHeight;
+                            newX = Math.max(0, Math.min(newX, w - p.radius));
+                            newY = Math.max(0, Math.min(newY, h - p.radius));
+                            p.x = newX;
+                            p.y = newY;
+                            p.el.style.left = p.x + 'px';
+                            p.el.style.top = p.y + 'px';
+                        }
+                        function onEnd(e) {
+                            if (p.isDragging) {
+                                p.isDragging = false;
+                                p.vx = (Math.random() - 0.5) * 4;
+                                p.vy = (Math.random() - 0.5) * 4 - 2;
+                            }
+                        }
+
+                        el.addEventListener('mousedown', onStart);
+                        document.addEventListener('mousemove', onMove);
+                        document.addEventListener('mouseup', onEnd);
+                        el.addEventListener('touchstart', onStart, { passive: false });
+                        document.addEventListener('touchmove', onMove, { passive: false });
+                        document.addEventListener('touchend', onEnd, { passive: false });
+                        document.addEventListener('touchcancel', onEnd, { passive: false });
+                    })(obj);
+                }
+
+                function updatePoops() {
+                    var w = window.innerWidth;
+                    var h = window.innerHeight;
+                    for (var i = 0; i < poops.length; i++) {
+                        var p = poops[i];
+                        if (p.isDragging) continue;
+                        p.vy += gravity;
+                        p.vx *= friction;
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.x < 0) { p.x = 0; p.vx = -p.vx * damping; }
+                        else if (p.x + p.radius > w) { p.x = w - p.radius; p.vx = -p.vx * damping; }
+                        if (p.y < 0) { p.y = 0; p.vy = -p.vy * damping; }
+                        else if (p.y + p.radius > h) { p.y = h - p.radius; p.vy = -p.vy * damping; }
+                        p.el.style.left = p.x + 'px';
+                        p.el.style.top = p.y + 'px';
+                    }
+                    requestAnimationFrame(updatePoops);
+                }
+                requestAnimationFrame(updatePoops);
+            }
+        })();
     </script>
 </body>
-  </html>
+</html>
