@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>捂五悟Website</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 全局重置 — 适配老旧浏览器内核 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #dce8d5;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            align-items: center;
+            width: 100%;
+            max-width: 780px;
+            padding: 1.5rem;
+            -webkit-transform: translateY(0);
+            transform: translateY(0);
+            -webkit-transition: -webkit-transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* 上移：留出顶部空白 */
+        .container.shifted {
+            -webkit-transform: translateY(calc(-50vh + 120px + 8vh));
+            transform: translateY(calc(-50vh + 120px + 8vh));
+        }
+
+        .title-wrapper {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            align-items: center;
+            width: 100%;
+            -webkit-transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .main-title {
+            font-size: clamp(4.2rem, 16vw, 8rem);
+            font-weight: 700;
+            letter-spacing: 14px;
+            line-height: 1.15;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-wrap: wrap;
+            flex-wrap: wrap;
+            -webkit-justify-content: center;
+            justify-content: center;
+            gap: 0.1rem 1.2rem;
+            color: #2d4a2d;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .main-title span {
+            color: #2d4a2d;
+        }
+
+        .sub {
+            font-size: clamp(0.8rem, 2.2vw, 1.2rem);
+            font-weight: 300;
+            letter-spacing: 14px;
+            text-transform: uppercase;
+            color: #3d5a3d;
+            opacity: 0.7;
+            margin-top: 0.1rem;
+            -webkit-transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* 按钮容器 */
+        .button-grid {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-wrap: wrap;
+            flex-wrap: wrap;
+            -webkit-justify-content: center;
+            justify-content: center;
+            gap: 0.8rem 1.2rem;
+            margin-top: 2.2rem;
+            width: 100%;
+            max-width: 550px;
+            opacity: 0;
+            -webkit-transform: translateY(12px);
+            transform: translateY(12px);
+            -webkit-transition: opacity 0.5s ease 0.7s, -webkit-transform 0.5s ease 0.7s;
+            transition: opacity 0.5s ease 0.7s, transform 0.5s ease 0.7s;
+            pointer-events: none;
+        }
+
+        /* 按钮 — 完全无效果，纯色块 */
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.6rem;
+            border-radius: 40px;
+            background: rgba(45, 74, 45, 0.10);
+            border: 1.5px solid #2d4a2d;
+            color: #2d4a2d;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-decoration: none;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            cursor: pointer;
+            text-align: center;
+            -webkit-flex: 1 0 auto;
+            flex: 1 0 auto;
+            min-width: 100px;
+            max-width: 160px;
+            -webkit-transition: none;
+            transition: none;
+            box-shadow: none;
+        }
+
+        /* 完全去掉 hover / active 效果 */
+        .btn:hover,
+        .btn:active,
+        .btn:focus {
+            background: rgba(45, 74, 45, 0.10);
+            box-shadow: none;
+            -webkit-transform: none;
+            transform: none;
+        }
+
+        /* 上移后按钮区域可见 */
+        .container.shifted .button-grid {
+            opacity: 1;
+            -webkit-transform: translateY(0);
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* 上移后标题缩小 */
+        .container.shifted .main-title {
+            font-size: clamp(2.8rem, 8vw, 4.6rem);
+            letter-spacing: 8px;
+            gap: 0.1rem 0.6rem;
+        }
+
+        .container.shifted .sub {
+            font-size: clamp(0.6rem, 1.6vw, 0.9rem);
+            letter-spacing: 8px;
+            margin-top: 0.2rem;
+        }
+
+        /* 底部 "Powered by DeepSeek" — 纯文字 */
+        .footer-credit {
+            position: fixed;
+            bottom: 24px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: #5a7a5a;
+            letter-spacing: 2px;
+            opacity: 0.55;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            pointer-events: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 480px) {
+            .main-title {
+                letter-spacing: 6px;
+            }
+            .sub {
+                letter-spacing: 8px;
+            }
+            .container.shifted .main-title {
+                letter-spacing: 4px;
+            }
+            .container.shifted .sub {
+                letter-spacing: 6px;
+            }
+            .container.shifted {
+                -webkit-transform: translateY(calc(-50vh + 80px + 6vh));
+                transform: translateY(calc(-50vh + 80px + 6vh));
+            }
+            .footer-credit {
+                font-size: 0.6rem;
+                bottom: 16px;
+            }
+            .btn {
+                font-size: 0.8rem;
+                padding: 0.5rem 1rem;
+                min-width: 70px;
+                max-width: 130px;
+            }
+            .button-grid {
+                gap: 0.5rem 0.7rem;
+            }
+        }
+
+        .button-grid {
+            display: -webkit-box;
+            display: -moz-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-wrap: wrap;
+            flex-wrap: wrap;
+            -webkit-justify-content: center;
+            justify-content: center;
+        }
+
+        .fade-in {
+            -webkit-animation: fadeUp 0.9s ease forwards;
+            animation: fadeUp 0.9s ease forwards;
+        }
+
+        @-webkit-keyframes fadeUp {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes fadeUp {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container fade-in" id="container">
+        <div class="title-wrapper">
+            <h1 class="main-title">
+                <span>捂</span>
+                <span>五</span>
+                <span>悟</span>
+            </h1>
+            <div class="sub">· wu · wu · wu ·</div>
+        </div>
+
+        <!-- 5个按钮 -->
+        <div class="button-grid" id="buttonGrid">
+            <!-- 按钮一：游戏，已绑定链接 -->
+            <a href="https://woyaojava.github.io/games/" target="_blank" class="btn" id="btn1">游戏</a>
+            <!-- 其余按钮为占位 -->
+            <a href="#" class="btn" id="btn2">按钮二</a>
+            <a href="#" class="btn" id="btn3">按钮三</a>
+            <a href="#" class="btn" id="btn4">按钮四</a>
+            <a href="#" class="btn" id="btn5">按钮五</a>
+        </div>
+    </div>
+
+    <!-- 底部纯文字 -->
+    <div class="footer-credit">Powered by DeepSeek</div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            var container = document.getElementById('container');
+            var btn2 = document.getElementById('btn2');
+            var btn3 = document.getElementById('btn3');
+            var btn4 = document.getElementById('btn4');
+            var btn5 = document.getElementById('btn5');
+
+            container.classList.remove('shifted');
+
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    container.classList.add('shifted');
+                }, 500);
+            });
+
+            // 按钮二至五为占位，点击提示
+            btn2.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('按钮二功能待添加');
+            });
+
+            btn3.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('按钮三功能待添加');
+            });
+
+            btn4.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('按钮四功能待添加');
+            });
+
+            btn5.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('按钮五功能待添加');
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
