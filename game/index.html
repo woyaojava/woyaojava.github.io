@@ -8,12 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* 全局重置 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *:focus, *:focus-visible { outline: none !important; }
 
         body {
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -33,7 +29,6 @@
             width: 100%;
             max-width: 780px;
             padding-top: 1.2rem;
-            /* 底部留空给固定标注 */
             padding-bottom: 4rem;
         }
 
@@ -44,7 +39,6 @@
             width: 100%;
             margin-bottom: 2.5rem;
         }
-
         .main-title {
             font-size: clamp(3.6rem, 12vw, 6rem);
             font-weight: 700;
@@ -57,11 +51,7 @@
             color: #2d4a2d;
             user-select: none;
         }
-
-        .main-title span {
-            color: #2d4a2d;
-        }
-
+        .main-title span { color: #2d4a2d; }
         .sub {
             font-size: clamp(0.7rem, 2vw, 1rem);
             font-weight: 300;
@@ -97,20 +87,22 @@
             text-align: center;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             cursor: pointer;
-            transition: none;
+            transition: transform 0.12s, background 0.12s;
             box-shadow: none;
             word-break: break-word;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
-
-        .btn:hover,
-        .btn:active,
-        .btn:focus {
+        .btn:hover {
             background: rgba(45, 74, 45, 0.08);
-            box-shadow: none;
             transform: none;
         }
+        /* 点击特效 —— 由 JS 添加 .pressed 类触发 */
+        .btn.pressed {
+            transform: scale(0.93);
+            background: rgba(45, 74, 45, 0.30);
+        }
 
-        /* ===== 底部标注 — 固定于视口最下方 ===== */
         .footer-credit {
             position: fixed;
             bottom: 24px;
@@ -127,64 +119,58 @@
             z-index: 10;
         }
 
-        /* 响应式 */
         @media (max-width: 480px) {
-            .main-title {
-                letter-spacing: 6px;
-            }
-            .sub {
-                letter-spacing: 8px;
-            }
-            .btn {
-                font-size: 0.9rem;
-                padding: 0.7rem 1.2rem;
-            }
-            .button-group {
-                gap: 1rem;
-            }
-            .container {
-                padding-top: 0.8rem;
-                padding-bottom: 3.5rem;
-            }
-            .title-wrapper {
-                margin-bottom: 1.8rem;
-            }
-            .footer-credit {
-                font-size: 0.6rem;
-                bottom: 16px;
-            }
+            .main-title { letter-spacing: 6px; }
+            .sub { letter-spacing: 8px; }
+            .btn { font-size: 0.9rem; padding: 0.7rem 1.2rem; }
+            .button-group { gap: 1rem; }
+            .container { padding-top: 0.8rem; padding-bottom: 3.5rem; }
+            .title-wrapper { margin-bottom: 1.8rem; }
+            .footer-credit { font-size: 0.6rem; bottom: 16px; }
         }
 
-        .fade-in {
-            animation: fadeUp 0.7s ease forwards;
-        }
-
-        @keyframes fadeUp {
-            0% { opacity: 0; transform: translateY(12px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
+        .fade-in { animation: fadeUp 0.7s ease forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
     <div class="container fade-in">
         <div class="title-wrapper">
-            <h1 class="main-title">
-                <span>捂</span>
-                <span>五</span>
-                <span>悟</span>
-            </h1>
+            <h1 class="main-title"><span>捂</span><span>五</span><span>悟</span></h1>
             <div class="sub">· 游 戏 入 口 ·</div>
         </div>
-
         <div class="button-group">
             <a href="https://woyaojava.github.io/questionmarkmystery" target="_blank" class="btn">问号秘境</a>
             <a href="https://woyaojava.github.io/xiaojiguolnchestn" target="_blank" class="btn">打小鸡裹 lnchestn</a>
         </div>
     </div>
-
-    <!-- 底部标注 — 固定在最下方 -->
     <div class="footer-credit">Powered by DeepSeek</div>
 
+    <script>
+        (function() {
+            // 为所有按钮添加点击特效（pressed 类控制）
+            var buttons = document.querySelectorAll('.btn');
+            buttons.forEach(function(btn) {
+                btn.addEventListener('mousedown', function(e) {
+                    this.classList.add('pressed');
+                });
+                btn.addEventListener('mouseup', function(e) {
+                    this.classList.remove('pressed');
+                });
+                btn.addEventListener('mouseleave', function(e) {
+                    this.classList.remove('pressed');
+                });
+                btn.addEventListener('touchstart', function(e) {
+                    this.classList.add('pressed');
+                }, { passive: true });
+                btn.addEventListener('touchend', function(e) {
+                    this.classList.remove('pressed');
+                }, { passive: true });
+                btn.addEventListener('touchcancel', function(e) {
+                    this.classList.remove('pressed');
+                }, { passive: true });
+            });
+        })();
+    </script>
 </body>
 </html>
