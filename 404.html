@@ -13,6 +13,10 @@
             padding: 0;
             box-sizing: border-box;
         }
+        /* 彻底去除蓝框 */
+        *:focus, *:focus-visible {
+            outline: none !important;
+        }
 
         body {
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -34,6 +38,11 @@
             width: 100%;
             max-width: 600px;
             text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .container * {
+            pointer-events: auto;
         }
 
         .main-title {
@@ -44,6 +53,27 @@
             color: #2d4a2d;
             user-select: none;
             margin-bottom: 0.2rem;
+            display: flex;
+            justify-content: center;
+            gap: 0.1em;
+        }
+        .main-title .digit {
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            display: inline-block;
+        }
+        .main-title .digit:hover {
+            color: #1f3a1f;
+        }
+        .main-title .digit:active {
+            transform: scale(0.92);
+        }
+        .main-title .digit.gone {
+            opacity: 0;
+            pointer-events: none;
+            cursor: default;
+            transform: none;
         }
 
         .sub-text {
@@ -55,7 +85,6 @@
             margin-top: 0.5rem;
             opacity: 0.85;
         }
-
         .sub-text .action-link {
             color: #2d4a2d;
             font-weight: 600;
@@ -65,12 +94,10 @@
             text-decoration-thickness: 1.5px;
             transition: color 0.2s, text-decoration-color 0.2s;
         }
-
         .sub-text .action-link:hover {
             color: #1a3a1a;
             text-decoration-color: #1a3a1a;
         }
-
         .sub-text .action-link:active {
             transform: scale(0.97);
         }
@@ -88,6 +115,34 @@
             opacity: 0.5;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             pointer-events: none;
+            z-index: 20;
+        }
+
+        #physics-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .phys-digit {
+            position: absolute;
+            font-weight: 700;
+            color: #2d4a2d;
+            user-select: none;
+            pointer-events: auto;
+            cursor: grab;
+            will-change: transform;
+            touch-action: none;
+            transition: none;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: inline-block;
+        }
+        .phys-digit:active {
+            cursor: grabbing;
         }
 
         @media (max-width: 480px) {
@@ -107,50 +162,185 @@
         .fade-in {
             animation: fadeUp 0.8s ease forwards;
         }
-
         @keyframes fadeUp {
-            0% {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            0% { opacity: 0; transform: translateY(16px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
     <div class="container fade-in">
-        <div class="main-title">404</div>
+        <div class="main-title">
+            <span class="digit" data-digit="4">4</span>
+            <span class="digit" data-digit="0">0</span>
+            <span class="digit" data-digit="4">4</span>
+        </div>
         <p class="sub-text">
             你似乎访问了一个不存在的页面。<br>
-            尝试 <span class="action-link" id="refreshLink">刷新页面</span> 或 <span class="action-link" id="homeLink">返回首页</span>
+            <span class="action-link" id="homeLink">返回首页</span>
         </p>
     </div>
 
+    <div id="physics-container"></div>
     <div class="footer-credit">Powered by DeepSeek</div>
 
     <script>
         (function() {
             "use strict";
 
-            var refreshLink = document.getElementById('refreshLink');
+            // 返回首页
             var homeLink = document.getElementById('homeLink');
-
-            refreshLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.reload();
-            });
-
             homeLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 window.location.href = 'https://woyaojava.github.io';
             });
 
+            // ---- 物理引擎（数字脱落 + 拖拽） ----
+            var container = document.getElementById('physics-container');
+            var physDigits = [];
+
+            function createPhysDigit(digitChar, clientX, clientY, fromEl) {
+                var style = window.getComputedStyle(fromEl);
+                var fontSize = style.fontSize;
+                var fontWeight = style.fontWeight;
+                var color = style.color;
+                var fontFamily = style.fontFamily;
+
+                var el = document.createElement('div');
+                el.className = 'phys-digit';
+                el.textContent = digitChar;
+                el.style.fontSize = fontSize;
+                el.style.fontWeight = fontWeight;
+                el.style.color = color;
+                el.style.fontFamily = fontFamily;
+                container.appendChild(el);
+
+                var rect = el.getBoundingClientRect();
+                var width = rect.width;
+                var height = rect.height;
+                var radius = Math.max(width, height) / 2;
+
+                var w = window.innerWidth;
+                var h = window.innerHeight;
+                var x = Math.min(Math.max(clientX - width/2, 0), w - width);
+                var y = Math.min(Math.max(clientY - height/2, 0), h - height);
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+
+                var obj = {
+                    el: el,
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 6 - 3,
+                    radius: radius,
+                    isDragging: false,
+                    dragOffsetX: 0,
+                    dragOffsetY: 0
+                };
+                physDigits.push(obj);
+
+                // 拖拽事件
+                (function(p) {
+                    function onStart(e) {
+                        e.preventDefault();
+                        var touch = e.touches ? e.touches[0] : e;
+                        var rect = p.el.getBoundingClientRect();
+                        p.dragOffsetX = touch.clientX - rect.left;
+                        p.dragOffsetY = touch.clientY - rect.top;
+                        p.isDragging = true;
+                        p.vx = 0;
+                        p.vy = 0;
+                    }
+                    function onMove(e) {
+                        if (!p.isDragging) return;
+                        e.preventDefault();
+                        var touch = e.touches ? e.touches[0] : e;
+                        var newX = touch.clientX - p.dragOffsetX;
+                        var newY = touch.clientY - p.dragOffsetY;
+                        var w = window.innerWidth;
+                        var h = window.innerHeight;
+                        newX = Math.max(0, Math.min(newX, w - p.width));
+                        newY = Math.max(0, Math.min(newY, h - p.height));
+                        p.x = newX;
+                        p.y = newY;
+                        p.el.style.left = p.x + 'px';
+                        p.el.style.top = p.y + 'px';
+                    }
+                    function onEnd(e) {
+                        if (p.isDragging) {
+                            p.isDragging = false;
+                            p.vx = (Math.random() - 0.5) * 6;
+                            p.vy = (Math.random() - 0.5) * 6 - 3;
+                        }
+                    }
+                    el.addEventListener('mousedown', onStart);
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onEnd);
+                    el.addEventListener('touchstart', onStart, { passive: false });
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onEnd, { passive: false });
+                    document.addEventListener('touchcancel', onEnd, { passive: false });
+                })(obj);
+
+                if (!window._physicsRunning) {
+                    window._physicsRunning = true;
+                    requestAnimationFrame(updatePhysics);
+                }
+            }
+
+            function updatePhysics() {
+                var w = window.innerWidth;
+                var h = window.innerHeight;
+                var gravity = 0.25;
+                var damping = 0.85;
+                var friction = 0.99;
+
+                for (var i = physDigits.length - 1; i >= 0; i--) {
+                    var p = physDigits[i];
+                    if (p.isDragging) continue;
+                    p.vy += gravity;
+                    p.vx *= friction;
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x < 0) { p.x = 0; p.vx = -p.vx * damping; }
+                    else if (p.x + p.width > w) { p.x = w - p.width; p.vx = -p.vx * damping; }
+                    if (p.y < 0) { p.y = 0; p.vy = -p.vy * damping; }
+                    else if (p.y + p.height > h) { p.y = h - p.height; p.vy = -p.vy * damping; }
+
+                    p.el.style.left = p.x + 'px';
+                    p.el.style.top = p.y + 'px';
+                }
+
+                if (physDigits.length > 0) {
+                    requestAnimationFrame(updatePhysics);
+                } else {
+                    window._physicsRunning = false;
+                }
+            }
+
+            // 硬核模式：点击数字脱落
+            var digitSpans = document.querySelectorAll('.digit');
+            digitSpans.forEach(function(span) {
+                span.addEventListener('click', function(e) {
+                    if (this.classList.contains('gone')) return;
+                    var digit = this.getAttribute('data-digit');
+                    var clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    var clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    if (clientX === undefined) {
+                        clientX = window.innerWidth / 2;
+                        clientY = window.innerHeight / 2;
+                    }
+                    this.classList.add('gone');
+                    createPhysDigit(digit, clientX, clientY, this);
+                });
+            });
+
         })();
     </script>
-
 </body>
 </html>
