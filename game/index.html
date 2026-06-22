@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* 全局重置 — 适配老旧浏览器内核 */
+        /* 全局重置 */
         * {
             margin: 0;
             padding: 0;
@@ -19,35 +19,27 @@
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             min-height: 100vh;
             background: #dce8d5;
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-direction: column;
             flex-direction: column;
-            -webkit-align-items: center;
             align-items: center;
             padding: 1.5rem;
             overflow-y: auto;
         }
 
-        /* 主容器：标题固定在上方 */
         .container {
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-direction: column;
             flex-direction: column;
-            -webkit-align-items: center;
             align-items: center;
             width: 100%;
             max-width: 780px;
             padding-top: 1.2rem;
+            /* 底部留空给固定标注 */
+            padding-bottom: 4rem;
         }
 
         .title-wrapper {
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-direction: column;
             flex-direction: column;
-            -webkit-align-items: center;
             align-items: center;
             width: 100%;
             margin-bottom: 2.5rem;
@@ -58,15 +50,11 @@
             font-weight: 700;
             letter-spacing: 12px;
             line-height: 1.15;
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-wrap: wrap;
             flex-wrap: wrap;
-            -webkit-justify-content: center;
             justify-content: center;
             gap: 0.1rem 1rem;
             color: #2d4a2d;
-            -webkit-user-select: none;
             user-select: none;
         }
 
@@ -84,13 +72,9 @@
             margin-top: 0.1rem;
         }
 
-        /* 按钮容器 — 纵向排列，更清晰 */
         .button-group {
-            display: -webkit-flex;
             display: flex;
-            -webkit-flex-direction: column;
             flex-direction: column;
-            -webkit-align-items: center;
             align-items: center;
             gap: 1.2rem;
             width: 100%;
@@ -98,7 +82,6 @@
             margin-top: 0.5rem;
         }
 
-        /* 按钮样式 — 无交互特效，纯色块 */
         .btn {
             display: inline-block;
             width: 100%;
@@ -114,32 +97,34 @@
             text-align: center;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             cursor: pointer;
-            -webkit-transition: none;
             transition: none;
             box-shadow: none;
             word-break: break-word;
         }
 
-        /* 完全去掉 hover / active 效果 */
         .btn:hover,
         .btn:active,
         .btn:focus {
             background: rgba(45, 74, 45, 0.08);
             box-shadow: none;
-            -webkit-transform: none;
             transform: none;
         }
 
-        /* 底部 "Powered by DeepSeek" */
+        /* ===== 底部标注 — 固定于视口最下方 ===== */
         .footer-credit {
-            margin-top: 3rem;
+            position: fixed;
+            bottom: 24px;
+            left: 0;
+            width: 100%;
+            text-align: center;
             font-size: 0.7rem;
             font-weight: 300;
             color: #5a7a5a;
             letter-spacing: 2px;
-            opacity: 0.5;
+            opacity: 0.55;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             pointer-events: none;
+            z-index: 10;
         }
 
         /* 响应式 */
@@ -159,32 +144,30 @@
             }
             .container {
                 padding-top: 0.8rem;
+                padding-bottom: 3.5rem;
             }
             .title-wrapper {
                 margin-bottom: 1.8rem;
             }
+            .footer-credit {
+                font-size: 0.6rem;
+                bottom: 16px;
+            }
         }
 
         .fade-in {
-            -webkit-animation: fadeUp 0.7s ease forwards;
             animation: fadeUp 0.7s ease forwards;
         }
 
-        @-webkit-keyframes fadeUp {
-            0% { opacity: 0; -webkit-transform: translateY(12px); transform: translateY(12px); }
-            100% { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
-        }
-
         @keyframes fadeUp {
-            0% { opacity: 0; -webkit-transform: translateY(12px); transform: translateY(12px); }
-            100% { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+            0% { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
     <div class="container fade-in">
-        <!-- 标题固定在上方 -->
         <div class="title-wrapper">
             <h1 class="main-title">
                 <span>捂</span>
@@ -194,15 +177,14 @@
             <div class="sub">· 游 戏 入 口 ·</div>
         </div>
 
-        <!-- 两个功能按钮 -->
         <div class="button-group">
             <a href="https://woyaojava.github.io/questionmarkmystery" target="_blank" class="btn">问号秘境</a>
             <a href="https://woyaojava.github.io/xiaojiguolnchestn" target="_blank" class="btn">打小鸡裹 lnchestn</a>
         </div>
-
-        <!-- 底部 -->
-        <div class="footer-credit">Powered by DeepSeek</div>
     </div>
 
+    <!-- 底部标注 — 固定在最下方 -->
+    <div class="footer-credit">Powered by DeepSeek</div>
+
 </body>
-  </html>
+</html>
