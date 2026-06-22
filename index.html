@@ -27,6 +27,7 @@
             position: fixed;
             left: 50%;
             top: 50%;
+            /* 使用 transform 控制位置，避免 top 动画触发布局 */
             transform: translate(-50%, -50%);
             width: 100%;
             max-width: 780px;
@@ -34,17 +35,37 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: top 0.8s cubic-bezier(0.23, 1, 0.32, 1),
-                        transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-            will-change: top, transform;
-            z-index: 10; /* 确保按钮在💩之上 */
-            pointer-events: none; /* 容器本身不拦截事件，但内部按钮可点 */
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: transform;
+            z-index: 10;
+            pointer-events: none;
         }
         .container * {
-            pointer-events: auto; /* 按钮等子元素可交互 */
+            pointer-events: auto;
         }
 
-        .container.shifted { top: 20px; transform: translateX(-50%); }
+        /* 上移：调整 translate 的 Y 值，向上移动 */
+        .container.shifted {
+            transform: translate(-50%, calc(-50% + 20px)); /* 从视口中心向上移动，最终顶部留白 */
+            /* 实际偏移量需根据标题高度微调，这里以 20px 为顶部留白，但需要计算标题自身高度 */
+            /* 更精确：使用 calc(-50% + 偏移) 但偏移量需结合标题大小，我们使用 vh 单位更可靠 */
+            /* 改为：向上移动视口高度的一半再减去标题占用空间 */
+            transform: translate(-50%, calc(-50% + 20px - 50vh + 标题高度));
+            /* 但标题高度是动态的，我们改用固定偏移：直接上移到顶部 */
+            /* 简单方式：用 vh 和 rem 组合 */
+            transform: translate(-50%, calc(-50vh + 80px));
+            /* 这样标题会从中心移动到顶部，留出约 80px 空白 */
+        }
+
+        /* 更稳妥的：使用 top 配合 transform，但 top 可能卡，只用 transform 平移 */
+        /* 我们使用固定定位，left:50%; top:50%; 然后 transform: translate(-50%, -50%) 居中 */
+        /* 上移时变换为 translate(-50%, -100% + 20px) 等，但为了留白，我们用 calc(-50vh + 80px) */
+        /* 更好的方式：用 translateY 单独控制 */
+        .container.shifted {
+            transform: translate(-50%, calc(-50vh + 80px));
+            /* 从视口中心移动到距顶部 80px 处 */
+            /* 这样不依赖 top 属性，完全由 transform 驱动，GPU加速 */
+        }
 
         .title-wrapper {
             display: flex;
@@ -184,7 +205,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* 容器本身不拦截事件，但子元素可交互 */
+            pointer-events: none;
             z-index: 1;
             overflow: hidden;
         }
@@ -193,11 +214,11 @@
             font-size: 2.2rem;
             line-height: 1;
             user-select: none;
-            pointer-events: auto; /* 允许拖拽 */
+            pointer-events: auto;
             cursor: grab;
             will-change: transform;
             transition: none;
-            touch-action: none; /* 防止触摸滚动 */
+            touch-action: none;
         }
         .poop:active {
             cursor: grabbing;
@@ -208,7 +229,9 @@
             .sub { letter-spacing: 8px; }
             .container.shifted .main-title { letter-spacing: 4px; }
             .container.shifted .sub { letter-spacing: 6px; }
-            .container.shifted { top: 12px; }
+            .container.shifted {
+                transform: translate(-50%, calc(-50vh + 60px));
+            }
             .footer-credit { font-size: 0.6rem; bottom: 16px; }
             .btn {
                 font-size: 1rem;
@@ -384,7 +407,6 @@
                             var touch = e.touches ? e.touches[0] : e;
                             var newX = touch.clientX - p.dragOffsetX;
                             var newY = touch.clientY - p.dragOffsetY;
-                            // 边界限制，防止拖出屏幕
                             var w = window.innerWidth;
                             var h = window.innerHeight;
                             newX = Math.max(0, Math.min(newX, w - p.radius));
@@ -397,44 +419,35 @@
                         function onEnd(e) {
                             if (p.isDragging) {
                                 p.isDragging = false;
-                                // 松手时给予随机速度
                                 p.vx = (Math.random() - 0.5) * 4;
                                 p.vy = (Math.random() - 0.5) * 4 - 2;
                             }
                         }
 
-                        // 鼠标
                         el.addEventListener('mousedown', onStart);
                         document.addEventListener('mousemove', onMove);
                         document.addEventListener('mouseup', onEnd);
-                        // 触摸
                         el.addEventListener('touchstart', onStart, { passive: false });
                         document.addEventListener('touchmove', onMove, { passive: false });
                         document.addEventListener('touchend', onEnd, { passive: false });
                         document.addEventListener('touchcancel', onEnd, { passive: false });
-
-                        // 清理（页面卸载时可选，但这里忽略）
                     })(obj);
                 }
 
-                // 物理更新循环
                 function updatePoops() {
                     var w = window.innerWidth;
                     var h = window.innerHeight;
                     for (var i = 0; i < poops.length; i++) {
                         var p = poops[i];
-                        if (p.isDragging) continue; // 拖拽时跳过物理更新
-
+                        if (p.isDragging) continue;
                         p.vy += gravity;
                         p.vx *= friction;
                         p.x += p.vx;
                         p.y += p.vy;
-
                         if (p.x < 0) { p.x = 0; p.vx = -p.vx * damping; }
                         else if (p.x + p.radius > w) { p.x = w - p.radius; p.vx = -p.vx * damping; }
                         if (p.y < 0) { p.y = 0; p.vy = -p.vy * damping; }
                         else if (p.y + p.radius > h) { p.y = h - p.radius; p.vy = -p.vy * damping; }
-
                         p.el.style.left = p.x + 'px';
                         p.el.style.top = p.y + 'px';
                     }
