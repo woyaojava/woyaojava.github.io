@@ -37,7 +37,13 @@
             transition: top 0.8s cubic-bezier(0.23, 1, 0.32, 1),
                         transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             will-change: top, transform;
+            z-index: 10; /* 确保按钮在💩之上 */
+            pointer-events: none; /* 容器本身不拦截事件，但内部按钮可点 */
         }
+        .container * {
+            pointer-events: auto; /* 按钮等子元素可交互 */
+        }
+
         .container.shifted { top: 20px; transform: translateX(-50%); }
 
         .title-wrapper {
@@ -60,7 +66,18 @@
             user-select: none;
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .main-title span { color: #2d4a2d; }
+        .main-title span { color: #2d4a2d; cursor: default; }
+        .main-title .clickable-悟 {
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .main-title .clickable-悟:hover,
+        .main-title .clickable-悟:active {
+            color: inherit;
+            text-shadow: none;
+            transform: none;
+        }
+
         .sub {
             font-size: clamp(0.8rem, 2.2vw, 1.2rem);
             font-weight: 300;
@@ -79,7 +96,7 @@
             gap: 0.8rem 1.2rem;
             margin-top: 2.2rem;
             width: 100%;
-            max-width: 550px;
+            max-width: 600px;
             opacity: 0;
             transform: translateY(12px);
             transition: opacity 0.5s ease 0.7s, transform 0.5s ease 0.7s;
@@ -88,35 +105,44 @@
 
         .btn {
             display: inline-block;
-            padding: 0.6rem 1.6rem;
-            border-radius: 40px;
+            padding: 0.9rem 2.2rem;
+            border-radius: 60px;
             background: rgba(45, 74, 45, 0.10);
             border: 1.5px solid #2d4a2d;
             color: #2d4a2d;
-            font-size: 0.95rem;
+            font-size: 1.15rem;
             font-weight: 500;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             text-decoration: none;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             cursor: pointer;
             text-align: center;
             flex: 1 0 auto;
-            min-width: 100px;
-            max-width: 160px;
-            transition: transform 0.12s, background 0.12s;
+            min-width: 130px;
+            max-width: 200px;
+            transition: transform 0.12s, background 0.12s, opacity 0.5s ease;
             box-shadow: none;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-        /* 悬停无变化 */
         .btn:hover {
             background: rgba(45, 74, 45, 0.10);
             transform: none;
         }
-        /* 点击特效 —— 由 JS 添加 .pressed 类触发 */
         .btn.pressed {
             transform: scale(0.93);
             background: rgba(45, 74, 45, 0.30);
+        }
+        .btn-hidden {
+            display: none;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .btn-hidden.show {
+            display: inline-block;
+            opacity: 1;
+            transform: scale(1);
         }
 
         .container.shifted .button-grid {
@@ -149,7 +175,32 @@
             opacity: 0.55;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             pointer-events: none;
-            z-index: 10;
+            z-index: 20;
+        }
+
+        #poop-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 容器本身不拦截事件，但子元素可交互 */
+            z-index: 1;
+            overflow: hidden;
+        }
+        .poop {
+            position: absolute;
+            font-size: 2.2rem;
+            line-height: 1;
+            user-select: none;
+            pointer-events: auto; /* 允许拖拽 */
+            cursor: grab;
+            will-change: transform;
+            transition: none;
+            touch-action: none; /* 防止触摸滚动 */
+        }
+        .poop:active {
+            cursor: grabbing;
         }
 
         @media (max-width: 480px) {
@@ -159,8 +210,19 @@
             .container.shifted .sub { letter-spacing: 6px; }
             .container.shifted { top: 12px; }
             .footer-credit { font-size: 0.6rem; bottom: 16px; }
-            .btn { font-size: 0.8rem; padding: 0.5rem 1rem; min-width: 70px; max-width: 130px; }
-            .button-grid { gap: 0.5rem 0.7rem; }
+            .btn {
+                font-size: 1rem;
+                padding: 0.7rem 1.6rem;
+                min-width: 100px;
+                max-width: 160px;
+            }
+            .button-grid {
+                gap: 0.6rem 0.9rem;
+                max-width: 100%;
+            }
+            .poop {
+                font-size: 1.8rem;
+            }
         }
 
         .fade-in { animation: fadeUp 0.9s ease forwards; }
@@ -170,17 +232,23 @@
 <body>
     <div class="container fade-in" id="container">
         <div class="title-wrapper">
-            <h1 class="main-title"><span>捂</span><span>五</span><span>悟</span></h1>
+            <h1 class="main-title">
+                <span>捂</span>
+                <span>五</span>
+                <span class="clickable-悟" id="clickableWu">悟</span>
+            </h1>
             <div class="sub">· wu · wu · wu ·</div>
         </div>
         <div class="button-grid" id="buttonGrid">
-            <a href="./game/" target="_blank" class="btn" id="btn1">游戏</a>
+            <a href="https://woyaojava.github.io/game/" target="_blank" class="btn" id="btn1">游戏</a>
             <a href="#" class="btn" id="btn2">按钮二</a>
             <a href="#" class="btn" id="btn3">按钮三</a>
             <a href="#" class="btn" id="btn4">按钮四</a>
             <a href="#" class="btn" id="btn5">按钮五</a>
+            <a href="https://github.com/woyaojava/woyaojava.github.io" target="_blank" class="btn btn-hidden" id="btn6">代码（史山）</a>
         </div>
     </div>
+    <div id="poop-container"></div>
     <div class="footer-credit">Powered by DeepSeek</div>
 
     <script>
@@ -191,59 +259,189 @@
                 setTimeout(function() { container.classList.add('shifted'); }, 500);
             });
 
-            // 为所有按钮添加点击特效（pressed 类控制）
+            // ---- 彩蛋逻辑 ----
+            var clickableWu = document.getElementById('clickableWu');
+            var btn6 = document.getElementById('btn6');
+            var clickCount = 0;
+            var firstClickTime = 0;
+            var unlocked = false;
+            var timer = null;
+
+            function resetChallenge() {
+                clickCount = 0;
+                firstClickTime = 0;
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+            }
+
+            function handleWuClick(e) {
+                if (unlocked) return;
+                var now = Date.now();
+                if (clickCount === 0) firstClickTime = now;
+                if (now - firstClickTime > 3000) {
+                    resetChallenge();
+                    clickCount = 1;
+                    firstClickTime = now;
+                    if (timer) clearTimeout(timer);
+                    timer = setTimeout(function() { resetChallenge(); timer = null; }, 3000);
+                    return;
+                }
+                clickCount++;
+                if (clickCount >= 10) {
+                    unlocked = true;
+                    btn6.classList.add('show');
+                    clickableWu.style.cursor = 'default';
+                    clickableWu.onclick = null;
+                    if (timer) { clearTimeout(timer); timer = null; }
+                    createPoops();
+                    return;
+                }
+                if (timer) { clearTimeout(timer); timer = null; }
+                var remaining = 3000 - (now - firstClickTime);
+                if (remaining > 0) {
+                    timer = setTimeout(function() { resetChallenge(); timer = null; }, remaining);
+                }
+            }
+            clickableWu.addEventListener('click', handleWuClick);
+
+            // ---- 按钮点击特效 ----
             var buttons = document.querySelectorAll('.btn');
             buttons.forEach(function(btn) {
-                // 鼠标按下
-                btn.addEventListener('mousedown', function(e) {
-                    this.classList.add('pressed');
-                });
-                // 鼠标松开（在任意位置松开都移除）
-                btn.addEventListener('mouseup', function(e) {
-                    this.classList.remove('pressed');
-                });
-                // 鼠标离开按钮时移除（防止卡住）
-                btn.addEventListener('mouseleave', function(e) {
-                    this.classList.remove('pressed');
-                });
-                // 触摸事件（移动端）
-                btn.addEventListener('touchstart', function(e) {
-                    this.classList.add('pressed');
-                }, { passive: true });
-                btn.addEventListener('touchend', function(e) {
-                    this.classList.remove('pressed');
-                }, { passive: true });
-                btn.addEventListener('touchcancel', function(e) {
-                    this.classList.remove('pressed');
-                }, { passive: true });
+                btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
+                btn.addEventListener('mouseup', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('mouseleave', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('touchstart', function(e) { this.classList.add('pressed'); }, { passive: true });
+                btn.addEventListener('touchend', function(e) { this.classList.remove('pressed'); }, { passive: true });
+                btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
             });
 
-            // 占位按钮 —— 延迟弹窗，让特效先显示
+            // ---- 占位按钮 ----
             var btn2 = document.getElementById('btn2');
             var btn3 = document.getElementById('btn3');
             var btn4 = document.getElementById('btn4');
             var btn5 = document.getElementById('btn5');
+            function delayedAlert(msg) { setTimeout(function() { alert(msg); }, 180); }
+            btn2.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮二功能待添加'); });
+            btn3.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮三功能待添加'); });
+            btn4.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮四功能待添加'); });
+            btn5.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮五功能待添加'); });
 
-            function delayedAlert(msg) {
-                setTimeout(function() { alert(msg); }, 180);
+            // ---- 物理引擎 + 拖拽 ----
+            function createPoops() {
+                var container = document.getElementById('poop-container');
+                var poops = [];
+                var count = 15;
+                var gravity = 0.25;
+                var damping = 0.85;
+                var friction = 0.99;
+
+                for (var i = 0; i < count; i++) {
+                    var el = document.createElement('div');
+                    el.className = 'poop';
+                    el.textContent = '💩';
+                    var size = 1.6 + Math.random() * 1.8;
+                    el.style.fontSize = size + 'rem';
+                    var w = window.innerWidth;
+                    var h = window.innerHeight;
+                    var x = Math.random() * (w - 60);
+                    var y = Math.random() * (h - 60);
+                    el.style.left = x + 'px';
+                    el.style.top = y + 'px';
+                    container.appendChild(el);
+
+                    var radius = size * 16;
+                    var obj = {
+                        el: el,
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 4 - 2,
+                        radius: radius,
+                        size: size,
+                        isDragging: false,
+                        dragOffsetX: 0,
+                        dragOffsetY: 0
+                    };
+                    poops.push(obj);
+
+                    // ---- 拖拽事件 ----
+                    (function(p) {
+                        function onStart(e) {
+                            e.preventDefault();
+                            var touch = e.touches ? e.touches[0] : e;
+                            var rect = p.el.getBoundingClientRect();
+                            p.dragOffsetX = touch.clientX - rect.left;
+                            p.dragOffsetY = touch.clientY - rect.top;
+                            p.isDragging = true;
+                            p.vx = 0;
+                            p.vy = 0;
+                        }
+                        function onMove(e) {
+                            if (!p.isDragging) return;
+                            e.preventDefault();
+                            var touch = e.touches ? e.touches[0] : e;
+                            var newX = touch.clientX - p.dragOffsetX;
+                            var newY = touch.clientY - p.dragOffsetY;
+                            // 边界限制，防止拖出屏幕
+                            var w = window.innerWidth;
+                            var h = window.innerHeight;
+                            newX = Math.max(0, Math.min(newX, w - p.radius));
+                            newY = Math.max(0, Math.min(newY, h - p.radius));
+                            p.x = newX;
+                            p.y = newY;
+                            p.el.style.left = p.x + 'px';
+                            p.el.style.top = p.y + 'px';
+                        }
+                        function onEnd(e) {
+                            if (p.isDragging) {
+                                p.isDragging = false;
+                                // 松手时给予随机速度
+                                p.vx = (Math.random() - 0.5) * 4;
+                                p.vy = (Math.random() - 0.5) * 4 - 2;
+                            }
+                        }
+
+                        // 鼠标
+                        el.addEventListener('mousedown', onStart);
+                        document.addEventListener('mousemove', onMove);
+                        document.addEventListener('mouseup', onEnd);
+                        // 触摸
+                        el.addEventListener('touchstart', onStart, { passive: false });
+                        document.addEventListener('touchmove', onMove, { passive: false });
+                        document.addEventListener('touchend', onEnd, { passive: false });
+                        document.addEventListener('touchcancel', onEnd, { passive: false });
+
+                        // 清理（页面卸载时可选，但这里忽略）
+                    })(obj);
+                }
+
+                // 物理更新循环
+                function updatePoops() {
+                    var w = window.innerWidth;
+                    var h = window.innerHeight;
+                    for (var i = 0; i < poops.length; i++) {
+                        var p = poops[i];
+                        if (p.isDragging) continue; // 拖拽时跳过物理更新
+
+                        p.vy += gravity;
+                        p.vx *= friction;
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        if (p.x < 0) { p.x = 0; p.vx = -p.vx * damping; }
+                        else if (p.x + p.radius > w) { p.x = w - p.radius; p.vx = -p.vx * damping; }
+                        if (p.y < 0) { p.y = 0; p.vy = -p.vy * damping; }
+                        else if (p.y + p.radius > h) { p.y = h - p.radius; p.vy = -p.vy * damping; }
+
+                        p.el.style.left = p.x + 'px';
+                        p.el.style.top = p.y + 'px';
+                    }
+                    requestAnimationFrame(updatePoops);
+                }
+                requestAnimationFrame(updatePoops);
             }
-
-            btn2.addEventListener('click', function(e) {
-                e.preventDefault();
-                delayedAlert('按钮二功能待添加');
-            });
-            btn3.addEventListener('click', function(e) {
-                e.preventDefault();
-                delayedAlert('按钮三功能待添加');
-            });
-            btn4.addEventListener('click', function(e) {
-                e.preventDefault();
-                delayedAlert('按钮四功能待添加');
-            });
-            btn5.addEventListener('click', function(e) {
-                e.preventDefault();
-                delayedAlert('按钮五功能待添加');
-            });
         })();
     </script>
 </body>
