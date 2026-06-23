@@ -13,8 +13,18 @@
             padding: 0;
             box-sizing: border-box;
         }
-        /* 彻底去除蓝框 */
-        *:focus, *:focus-visible {
+        /* 彻底去除所有元素的焦点蓝框 */
+        *:focus,
+        *:focus-visible {
+            outline: none !important;
+        }
+        /* 移动端高亮去除 */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* 特别针对链接 */
+        a:focus,
+        a:focus-visible {
             outline: none !important;
         }
 
@@ -93,6 +103,8 @@
             text-underline-offset: 4px;
             text-decoration-thickness: 1.5px;
             transition: color 0.2s, text-decoration-color 0.2s;
+            /* 确保链接也无蓝框 */
+            outline: none;
         }
         .sub-text .action-link:hover {
             color: #1a3a1a;
@@ -100,6 +112,10 @@
         }
         .sub-text .action-link:active {
             transform: scale(0.97);
+        }
+        .sub-text .action-link:focus,
+        .sub-text .action-link:focus-visible {
+            outline: none !important;
         }
 
         .footer-credit {
@@ -140,9 +156,14 @@
             transition: none;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             display: inline-block;
+            -webkit-tap-highlight-color: transparent;
         }
         .phys-digit:active {
             cursor: grabbing;
+        }
+        .phys-digit:focus,
+        .phys-digit:focus-visible {
+            outline: none !important;
         }
 
         @media (max-width: 480px) {
@@ -189,10 +210,12 @@
         (function() {
             "use strict";
 
-            // 返回首页
             var homeLink = document.getElementById('homeLink');
+
             homeLink.addEventListener('click', function(e) {
                 e.preventDefault();
+                // 主动移除焦点，彻底去除蓝框
+                this.blur();
                 window.location.href = 'https://woyaojava.github.io';
             });
 
