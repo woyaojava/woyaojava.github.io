@@ -1,1 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>捂五悟 · Q群收集</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *:focus, *:focus-visible { outline: none !important; }
+        * { -webkit-tap-highlight-color: transparent; }
 
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #dce8d5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .container * {
+            pointer-events: auto;
+        }
+
+        .main-title {
+            font-size: clamp(3.6rem, 12vw, 6rem);
+            font-weight: 700;
+            letter-spacing: 8px;
+            line-height: 1.15;
+            color: #2d4a2d;
+            user-select: none;
+            margin-bottom: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.1rem 0.6rem;
+        }
+        .main-title span { color: #2d4a2d; }
+
+        .sub {
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            font-weight: 300;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            color: #3d5a3d;
+            opacity: 0.6;
+            margin-bottom: 2.5rem;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.9rem 1.8rem;
+            border-radius: 60px;
+            background: rgba(45, 74, 45, 0.08);
+            border: 1.5px solid #2d4a2d;
+            color: #2d4a2d;
+            font-size: 1.05rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-decoration: none;
+            text-align: center;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            cursor: pointer;
+            transition: transform 0.12s, background 0.12s;
+            box-shadow: none;
+            word-break: break-word;
+            user-select: none;
+        }
+        .btn:hover {
+            background: rgba(45, 74, 45, 0.08);
+            transform: none;
+        }
+        .btn.pressed {
+            transform: scale(0.93);
+            background: rgba(45, 74, 45, 0.30);
+        }
+
+        .footer-credit {
+            position: fixed;
+            bottom: 24px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: #5a7a5a;
+            letter-spacing: 2px;
+            opacity: 0.55;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        @media (max-width: 480px) {
+            .main-title { font-size: clamp(2.8rem, 10vw, 4.5rem); letter-spacing: 4px; }
+            .sub { font-size: 0.7rem; letter-spacing: 6px; margin-bottom: 1.8rem; }
+            .btn { font-size: 0.9rem; padding: 0.7rem 1.2rem; }
+            .button-group { gap: 1rem; }
+            .footer-credit { font-size: 0.6rem; bottom: 16px; }
+        }
+
+        .fade-in { animation: fadeUp 0.7s ease forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="container fade-in">
+        <h1 class="main-title">
+            <span>捂</span>
+            <span>五</span>
+            <span>悟</span>
+        </h1>
+        <div class="sub">· Q 群 收 集 ·</div>
+
+        <div class="button-group">
+            <a href="https://woyaojava.github.io/game/qq/hi1" target="_blank" class="btn">hi 小 ih</a>
+            <a href="https://woyaojava.github.io/game/qq/hi2" target="_blank" class="btn">hi 小鸡(缆车皮肤+手感优化)</a>
+            <a href="https://woyaojava.github.io/game/qq/cat" target="_blank" class="btn">给猫梳毛</a>
+        </div>
+    </div>
+
+    <div class="footer-credit">Powered by DeepSeek</div>
+
+    <script>
+        (function() {
+            var buttons = document.querySelectorAll('.btn');
+            buttons.forEach(function(btn) {
+                btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
+                btn.addEventListener('mouseup', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('mouseleave', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('touchstart', function(e) { this.classList.add('pressed'); }, { passive: true });
+                btn.addEventListener('touchend', function(e) { this.classList.remove('pressed'); }, { passive: true });
+                btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
+            });
+        })();
+    </script>
+</body>
+</html>
