@@ -1,1 +1,1716 @@
-！
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频特效编辑器</title>
+    <style>
+        :root {
+            --bg: #0d0d0f;
+            --bg-secondary: #1a1a1e;
+            --surface: rgba(30, 30, 36, 0.55);
+            --surface-hover: rgba(40, 40, 48, 0.6);
+            --text: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --text-tertiary: #6e6e73;
+            --accent: #0071e3;
+            --accent-glow: rgba(0, 113, 227, 0.35);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.15);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+            --toggle-bg: rgba(120, 120, 128, 0.3);
+            --toggle-active: #34c759;
+            --slider-track: rgba(255, 255, 255, 0.12);
+            --slider-fill: #0071e3;
+            --waveform-bg: rgba(0, 0, 0, 0.3);
+            --waveform-color: rgba(255, 255, 255, 0.7);
+            --waveform-progress: #0071e3;
+            --card-radius: 20px;
+            --btn-radius: 14px;
+            --transition-fast: 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+            --transition-smooth: 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+            --transition-spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        body.light-mode {
+            --bg: #f2f2f7;
+            --bg-secondary: #e8e8ed;
+            --surface: rgba(255, 255, 255, 0.55);
+            --surface-hover: rgba(255, 255, 255, 0.7);
+            --text: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --text-tertiary: #aeaeb2;
+            --accent: #0071e3;
+            --accent-glow: rgba(0, 113, 227, 0.2);
+            --border: rgba(0, 0, 0, 0.06);
+            --border-strong: rgba(0, 0, 0, 0.12);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --toggle-bg: rgba(120, 120, 128, 0.22);
+            --slider-track: rgba(0, 0, 0, 0.1);
+            --waveform-bg: rgba(0, 0, 0, 0.06);
+            --waveform-color: rgba(0, 0, 0, 0.55);
+            --waveform-progress: #0071e3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'PingFang SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background var(--transition-smooth), color var(--transition-smooth);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 背景光晕 */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 0;
+            transition: all var(--transition-smooth);
+        }
+        .bg-orb-1 {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(0, 113, 227, 0.5) 0%, transparent 70%);
+            top: -120px;
+            right: -100px;
+        }
+        .bg-orb-2 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(255, 69, 58, 0.4) 0%, transparent 70%);
+            bottom: -100px;
+            left: -80px;
+        }
+        .bg-orb-3 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(52, 199, 89, 0.35) 0%, transparent 70%);
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        body.light-mode .bg-orb {
+            opacity: 0.15;
+        }
+
+        /* 主容器 */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 28px 20px 40px;
+        }
+
+        /* 头部 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 4px 14px var(--accent-glow);
+            transition: all var(--transition-smooth);
+        }
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 主题切换按钮 */
+        .theme-toggle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-strong);
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            color: var(--text);
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--surface-hover);
+            transform: scale(1.06);
+            border-color: var(--accent);
+        }
+        .theme-toggle:active {
+            transform: scale(0.94);
+            transition: all 0.08s ease;
+        }
+
+        /* 上传区域 */
+        .upload-zone {
+            position: relative;
+            border: 2px dashed var(--border-strong);
+            border-radius: var(--card-radius);
+            padding: 36px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: var(--surface-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .upload-zone.drag-over {
+            border-color: var(--accent);
+            background: rgba(0, 113, 227, 0.08);
+            transform: scale(1.02);
+            box-shadow: 0 0 0 16px rgba(0, 113, 227, 0.06);
+        }
+        .upload-zone.has-file {
+            border-style: solid;
+            border-color: var(--border);
+            padding: 16px 20px;
+        }
+        .upload-icon {
+            font-size: 42px;
+            margin-bottom: 8px;
+            transition: all var(--transition-smooth);
+        }
+        .upload-zone.has-file .upload-icon {
+            font-size: 0;
+            margin: 0;
+        }
+        .upload-text {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .upload-subtext {
+            font-size: 0.78rem;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+        .file-info {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+        .upload-zone.has-file .file-info {
+            display: flex;
+        }
+        .upload-zone.has-file .upload-text,
+        .upload-zone.has-file .upload-subtext {
+            display: none;
+        }
+        .file-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34c759;
+            animation: pulse-dot 2s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.5);
+            }
+            50% {
+                opacity: 0.6;
+                box-shadow: 0 0 0 10px rgba(52, 199, 89, 0);
+            }
+        }
+        .file-remove {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all var(--transition-fast);
+        }
+        .file-remove:hover {
+            color: #ff453a;
+            background: rgba(255, 69, 58, 0.1);
+        }
+
+        /* 波形区域 */
+        .waveform-section {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--card-radius);
+            padding: 16px 18px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-smooth);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .waveform-section.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .waveform-canvas {
+            width: 100%;
+            height: 100px;
+            border-radius: 10px;
+            background: var(--waveform-bg);
+            cursor: pointer;
+            display: block;
+            transition: background var(--transition-smooth);
+        }
+        .playback-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-play {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            box-shadow: 0 4px 14px var(--accent-glow);
+            flex-shrink: 0;
+        }
+        .btn-play:hover {
+            transform: scale(1.07);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+        .btn-play:active {
+            transform: scale(0.93);
+            transition: all 0.08s ease;
+        }
+        .btn-play.playing {
+            background: #ff453a;
+            box-shadow: 0 4px 14px rgba(255, 69, 58, 0.35);
+        }
+        .time-display {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            min-width: 100px;
+        }
+
+        /* 音效卡片网格 */
+        .effects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        @media (max-width: 540px) {
+            .effects-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .app-container {
+                padding: 16px 10px 30px;
+            }
+            .app-title {
+                font-size: 1.2rem;
+            }
+            .effect-card {
+                padding: 14px;
+            }
+        }
+
+        /* 磨砂玻璃卡片 */
+        .effect-card {
+            background: var(--surface);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border-radius: var(--card-radius);
+            padding: 18px;
+            border: 1px solid var(--border);
+            cursor: default;
+            transition: all var(--transition-smooth);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .effect-card:hover {
+            background: var(--surface-hover);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+            border-color: var(--border-strong);
+        }
+        .effect-card.active-effect {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(0, 113, 227, 0.2), var(--shadow);
+            background: rgba(0, 113, 227, 0.06);
+        }
+        body.light-mode .effect-card.active-effect {
+            background: rgba(0, 113, 227, 0.05);
+        }
+        .effect-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .effect-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+        .effect-emoji {
+            font-size: 1.3rem;
+            margin-right: 6px;
+        }
+
+        /* 苹果风格开关 */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--toggle-bg);
+            border-radius: 28px;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+        .toggle-slider::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            top: 2px;
+            left: 2px;
+            transition: all var(--transition-spring);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        .toggle-switch input:checked+.toggle-slider {
+            background: var(--toggle-active);
+        }
+        .toggle-switch input:checked+.toggle-slider::after {
+            transform: translateX(20px);
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.4);
+        }
+        .toggle-switch:active .toggle-slider::after {
+            width: 28px;
+            border-radius: 14px;
+            transition: all 0.1s ease;
+        }
+        .toggle-switch input:checked:active+.toggle-slider::after {
+            transform: translateX(16px);
+            width: 28px;
+            border-radius: 14px;
+        }
+
+        /* 强度滑块 */
+        .intensity-group {
+            margin-top: 6px;
+            opacity: 0.5;
+            transition: opacity var(--transition-smooth);
+            pointer-events: none;
+        }
+        .effect-card.active-effect .intensity-group {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .intensity-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        .intensity-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--slider-track);
+            outline: none;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+        .intensity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all var(--transition-fast);
+        }
+        .intensity-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        }
+        .intensity-slider::-webkit-slider-thumb:active {
+            transform: scale(1.05);
+            background: #f0f0f5;
+        }
+        .intensity-value {
+            font-weight: 600;
+            font-size: 0.72rem;
+            color: var(--accent);
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+        }
+
+        /* 导出按钮 */
+        .export-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-export {
+            flex: 1;
+            min-width: 140px;
+            padding: 14px 24px;
+            border-radius: var(--btn-radius);
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: -0.01em;
+            transition: all var(--transition-fast);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-export-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+        .btn-export-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+            filter: brightness(1.08);
+        }
+        .btn-export-primary:active {
+            transform: scale(0.96);
+            transition: all 0.08s ease;
+            filter: brightness(0.95);
+        }
+        .btn-export-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+            filter: none;
+            transform: none;
+        }
+        .btn-export-secondary {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid var(--border-strong);
+            color: var(--text);
+        }
+        .btn-export-secondary:hover {
+            background: var(--surface-hover);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .btn-export-secondary:active {
+            transform: scale(0.96);
+            transition: all 0.08s ease;
+        }
+        .btn-export-secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+            transform: none;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--surface);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-strong);
+            border-radius: 30px;
+            padding: 12px 24px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text);
+            z-index: 100;
+            box-shadow: var(--shadow);
+            transition: transform var(--transition-spring);
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 隐藏input */
+        #audioInput {
+            display: none;
+        }
+
+        /* 进度指示动画 */
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+        .processing-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 入场动画 */
+        .effect-card {
+            animation: cardIn 0.5s ease backwards;
+        }
+        .effect-card:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+        .effect-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        .effect-card:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+        .effect-card:nth-child(4) {
+            animation-delay: 0.2s;
+        }
+        .effect-card:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+        .effect-card:nth-child(6) {
+            animation-delay: 0.3s;
+        }
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景光晕 -->
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 主容器 -->
+    <div class="app-container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo-icon">🎛️</div>
+                <h1 class="app-title">雷霆音频编辑器</h1>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" title="切换深浅色模式" aria-label="切换深浅色模式">🌙</button>
+            </div>
+        </div>
+
+        <!-- 上传区域 -->
+        <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📁</div>
+            <p class="upload-text">点击或拖放上传音频文件</p>
+            <p class="upload-subtext">支持 MP3 / WAV / OGG / FLAC / AAC</p>
+            <div class="file-info">
+                <span class="file-dot"></span>
+                <span id="fileName">—</span>
+                <span style="color:var(--text-tertiary);font-size:0.75rem;" id="fileDuration"></span>
+                <button class="file-remove" id="fileRemove" title="移除文件">✕</button>
+            </div>
+        </div>
+        <input type="file" id="audioInput" accept="audio/*">
+
+        <!-- 波形区域 -->
+        <div class="waveform-section" id="waveformSection">
+            <canvas class="waveform-canvas" id="waveformCanvas"></canvas>
+            <div class="playback-controls">
+                <button class="btn-play" id="btnPlay" disabled title="播放 / 暂停">▶</button>
+                <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
+                <button class="btn-export-secondary" id="btnStop" disabled style="padding:8px 16px;border-radius:20px;font-size:0.8rem;">⏹ 停止</button>
+            </div>
+        </div>
+
+        <!-- 音效卡片 -->
+        <div class="effects-grid">
+            <!-- 炸麦音效 -->
+            <div class="effect-card" data-effect="distortion">
+                <div class="effect-card-header">
+                    <span class="effect-name"><span class="effect-emoji">💥</span>炸麦音效</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleDistortion">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="intensity-group">
+                    <div class="intensity-label"><span>失真强度</span><span class="intensity-value" id="valDistortion">50%</span></div>
+                    <input type="range" class="intensity-slider" id="sliderDistortion" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- 氦气2x -->
+            <div class="effect-card" data-effect="helium2x">
+                <div class="effect-card-header">
+                    <span class="effect-name"><span class="effect-emoji">🎈</span>氦气音效 2×</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleHelium2x">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="intensity-group">
+                    <div class="intensity-label"><span>音调偏移</span><span class="intensity-value" id="valHelium2x">50%</span></div>
+                    <input type="range" class="intensity-slider" id="sliderHelium2x" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- 氦气1.5x -->
+            <div class="effect-card" data-effect="helium15x">
+                <div class="effect-card-header">
+                    <span class="effect-name"><span class="effect-emoji">🎵</span>氦气音效 1.5×</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleHelium15x">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="intensity-group">
+                    <div class="intensity-label"><span>音调偏移</span><span class="intensity-value" id="valHelium15x">50%</span></div>
+                    <input type="range" class="intensity-slider" id="sliderHelium15x" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- 力竭音效 -->
+            <div class="effect-card" data-effect="exhausted">
+                <div class="effect-card-header">
+                    <span class="effect-name"><span class="effect-emoji">😮‍💨</span>力竭音效</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleExhausted">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="intensity-group">
+                    <div class="intensity-label"><span>疲惫程度</span><span class="intensity-value" id="valExhausted">50%</span></div>
+                    <input type="range" class="intensity-slider" id="sliderExhausted" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- 粗犷音色 -->
+            <div class="effect-card" data-effect="rough">
+                <div class="effect-card-header">
+                    <span class="effect-name"><span class="effect-emoji">🪨</span>粗犷音色</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleRough">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="intensity-group">
+                    <div class="intensity-label"><span>粗犷程度</span><span class="intensity-value" id="valRough">50%</span></div>
+                    <input type="range" class="intensity-slider" id="sliderRough" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- 蚊子音 -->
+            <div class="effect-card" data-effect="mosquito">
+                <div class="effect-card-header">
+                    <span class="effect-name"><span class="effect-emoji">🦟</span>蚊子音效</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleMosquito">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="intensity-group">
+                    <div class="intensity-label"><span>高音增强</span><span class="intensity-value" id="valMosquito">50%</span></div>
+                    <input type="range" class="intensity-slider" id="sliderMosquito" min="0" max="100" value="50">
+                </div>
+            </div>
+        </div>
+
+        <!-- 导出 -->
+        <div class="export-section">
+            <button class="btn-export btn-export-primary" id="btnExport" disabled>📥 导出音频 (WAV)</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============ DOM 引用 ============
+            const uploadZone = document.getElementById('uploadZone');
+            const audioInput = document.getElementById('audioInput');
+            const fileRemove = document.getElementById('fileRemove');
+            const fileNameEl = document.getElementById('fileName');
+            const fileDurationEl = document.getElementById('fileDuration');
+            const waveformSection = document.getElementById('waveformSection');
+            const waveformCanvas = document.getElementById('waveformCanvas');
+            const btnPlay = document.getElementById('btnPlay');
+            const btnStop = document.getElementById('btnStop');
+            const timeDisplay = document.getElementById('timeDisplay');
+            const btnExport = document.getElementById('btnExport');
+            const themeToggle = document.getElementById('themeToggle');
+            const toast = document.getElementById('toast');
+
+            // 效果开关和滑块
+            const effectConfigs = {
+                distortion: {
+                    toggle: document.getElementById('toggleDistortion'),
+                    slider: document.getElementById('sliderDistortion'),
+                    valEl: document.getElementById('valDistortion'),
+                    defaultValue: 50,
+                },
+                helium2x: {
+                    toggle: document.getElementById('toggleHelium2x'),
+                    slider: document.getElementById('sliderHelium2x'),
+                    valEl: document.getElementById('valHelium2x'),
+                    defaultValue: 50,
+                },
+                helium15x: {
+                    toggle: document.getElementById('toggleHelium15x'),
+                    slider: document.getElementById('sliderHelium15x'),
+                    valEl: document.getElementById('valHelium15x'),
+                    defaultValue: 50,
+                },
+                exhausted: {
+                    toggle: document.getElementById('toggleExhausted'),
+                    slider: document.getElementById('sliderExhausted'),
+                    valEl: document.getElementById('valExhausted'),
+                    defaultValue: 50,
+                },
+                rough: {
+                    toggle: document.getElementById('toggleRough'),
+                    slider: document.getElementById('sliderRough'),
+                    valEl: document.getElementById('valRough'),
+                    defaultValue: 50,
+                },
+                mosquito: {
+                    toggle: document.getElementById('toggleMosquito'),
+                    slider: document.getElementById('sliderMosquito'),
+                    valEl: document.getElementById('valMosquito'),
+                    defaultValue: 50,
+                },
+            };
+
+            // ============ 状态 ============
+            let audioBuffer = null;
+            let audioContext = null;
+            let sourceNode = null;
+            let isPlaying = false;
+            let playbackStartTime = 0;
+            let playbackPausedAt = 0;
+            let animationFrameId = null;
+            let isDarkMode = true;
+
+            // 效果节点（实时预览用）
+            let gainNode = null;
+            let distortionNode = null;
+            let lowpassFilter = null;
+            let highpassFilter = null;
+            let highshelfFilter = null;
+            let analyserNode = null;
+
+            // 当前效果参数缓存
+            let currentPlaybackRate = 1.0;
+
+            // ============ 初始化 ============
+            function init() {
+                updateAllCardStates();
+                drawEmptyWaveform();
+                loadThemePreference();
+                bindEvents();
+            }
+
+            function loadThemePreference() {
+                const saved = localStorage.getItem('audioEditorTheme');
+                if (saved === 'light') {
+                    document.body.classList.add('light-mode');
+                    isDarkMode = false;
+                    themeToggle.textContent = '☀️';
+                } else {
+                    document.body.classList.remove('light-mode');
+                    isDarkMode = true;
+                    themeToggle.textContent = '🌙';
+                }
+            }
+
+            function bindEvents() {
+                // 上传
+                uploadZone.addEventListener('click', (e) => {
+                    if (e.target !== fileRemove) audioInput.click();
+                });
+                audioInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) loadAudioFile(e.target.files[0]);
+                });
+                fileRemove.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeAudio();
+                });
+
+                // 拖放
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('drag-over');
+                });
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('drag-over');
+                });
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('drag-over');
+                    if (e.dataTransfer.files.length > 0) loadAudioFile(e.dataTransfer.files[0]);
+                });
+
+                // 播放控制
+                btnPlay.addEventListener('click', togglePlayback);
+                btnStop.addEventListener('click', stopPlayback);
+                waveformCanvas.addEventListener('click', handleWaveformClick);
+
+                // 导出
+                btnExport.addEventListener('click', exportAudio);
+
+                // 主题切换
+                themeToggle.addEventListener('click', toggleTheme);
+
+                // 效果开关和滑块
+                Object.entries(effectConfigs).forEach(([key, config]) => {
+                    config.toggle.addEventListener('change', () => {
+                        updateCardState(key);
+                        updatePlaybackRate();
+                        updateEffectNodes();
+                    });
+                    config.slider.addEventListener('input', () => {
+                        config.valEl.textContent = config.slider.value + '%';
+                        updatePlaybackRate();
+                        updateEffectNodes();
+                    });
+                    // 初始化显示值
+                    config.slider.value = config.defaultValue;
+                    config.valEl.textContent = config.defaultValue + '%';
+                });
+
+                // 键盘快捷键
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && e.target === document.body) {
+                        e.preventDefault();
+                        if (audioBuffer) togglePlayback();
+                    }
+                });
+
+                // 窗口大小变化时重绘波形
+                window.addEventListener('resize', () => {
+                    if (audioBuffer) drawWaveform();
+                    else drawEmptyWaveform();
+                });
+            }
+
+            // ============ 音频加载 ============
+            async function loadAudioFile(file) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const ctx = getOrCreateAudioContext();
+                    const decoded = await ctx.decodeAudioData(arrayBuffer);
+                    audioBuffer = decoded;
+                    fileNameEl.textContent = file.name;
+                    const dur = decoded.duration;
+                    fileDurationEl.textContent = formatTime(dur);
+                    uploadZone.classList.add('has-file');
+                    waveformSection.classList.add('active');
+                    btnPlay.disabled = false;
+                    btnStop.disabled = false;
+                    btnExport.disabled = false;
+                    stopPlayback();
+                    drawWaveform();
+                    updatePlaybackRate();
+                    showToast('✅ 音频已加载 — ' + file.name);
+                } catch (err) {
+                    console.error('加载音频失败:', err);
+                    showToast('❌ 无法加载音频文件，请检查格式');
+                }
+            }
+
+            function removeAudio() {
+                stopPlayback();
+                audioBuffer = null;
+                uploadZone.classList.remove('has-file');
+                waveformSection.classList.remove('active');
+                btnPlay.disabled = true;
+                btnStop.disabled = true;
+                btnExport.disabled = true;
+                fileNameEl.textContent = '—';
+                fileDurationEl.textContent = '';
+                audioInput.value = '';
+                currentPlaybackRate = 1.0;
+                drawEmptyWaveform();
+                updateAllCardStates();
+                showToast('🗑️ 音频已移除');
+            }
+
+            function getOrCreateAudioContext() {
+                if (!audioContext) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    audioContext = new AudioCtx();
+                }
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                return audioContext;
+            }
+
+            // ============ 效果节点管理 ============
+            function ensureEffectNodes() {
+                const ctx = getOrCreateAudioContext();
+                if (!gainNode) {
+                    gainNode = ctx.createGain();
+                    gainNode.gain.value = 1.0;
+                }
+                if (!distortionNode) {
+                    distortionNode = ctx.createWaveShaper();
+                    distortionNode.curve = makeLinearCurve();
+                    distortionNode.oversample = '4x';
+                }
+                if (!lowpassFilter) {
+                    lowpassFilter = ctx.createBiquadFilter();
+                    lowpassFilter.type = 'lowpass';
+                    lowpassFilter.frequency.value = 20000;
+                    lowpassFilter.Q.value = 0.7;
+                }
+                if (!highpassFilter) {
+                    highpassFilter = ctx.createBiquadFilter();
+                    highpassFilter.type = 'highpass';
+                    highpassFilter.frequency.value = 20;
+                    highpassFilter.Q.value = 0.7;
+                }
+                if (!highshelfFilter) {
+                    highshelfFilter = ctx.createBiquadFilter();
+                    highshelfFilter.type = 'highshelf';
+                    highshelfFilter.frequency.value = 4000;
+                    highshelfFilter.gain.value = 0;
+                }
+                if (!analyserNode) {
+                    analyserNode = ctx.createAnalyser();
+                    analyserNode.fftSize = 256;
+                }
+            }
+
+            function makeLinearCurve() {
+                const curve = new Float32Array(256);
+                for (let i = 0; i < 256; i++) {
+                    const x = (i - 128) / 128;
+                    curve[i] = x;
+                }
+                return curve;
+            }
+
+            function makeDistortionCurve(intensity) {
+                const curve = new Float32Array(256);
+                const threshold = 1.0 - intensity * 0.85;
+                const boost = 1 + intensity * 4;
+                for (let i = 0; i < 256; i++) {
+                    let x = (i - 128) / 128;
+                    x *= boost;
+                    if (x > threshold) x = threshold + (x - threshold) / (1 + intensity * 8);
+                    if (x < -threshold) x = -threshold + (x + threshold) / (1 + intensity * 8);
+                    x = Math.tanh(x * (1 + intensity * 2));
+                    curve[i] = Math.max(-1, Math.min(1, x));
+                }
+                return curve;
+            }
+
+            function updatePlaybackRate() {
+                let rate = 1.0;
+                const h2 = effectConfigs.helium2x.toggle.checked;
+                const h15 = effectConfigs.helium15x.toggle.checked;
+                const rough = effectConfigs.rough.toggle.checked;
+
+                if (h2) {
+                    const intensity = parseInt(effectConfigs.helium2x.slider.value) / 100;
+                    rate *= (1 + intensity * 1.0);
+                }
+                if (h15) {
+                    const intensity = parseInt(effectConfigs.helium15x.slider.value) / 100;
+                    rate *= (1 + intensity * 0.5);
+                }
+                if (rough) {
+                    const intensity = parseInt(effectConfigs.rough.slider.value) / 100;
+                    rate *= (1 - intensity * 0.25);
+                }
+                currentPlaybackRate = Math.max(0.1, Math.min(4.0, rate));
+                if (sourceNode && isPlaying) {
+                    try {
+                        sourceNode.playbackRate.setValueAtTime(currentPlaybackRate, audioContext.currentTime);
+                    } catch (e) { /* 忽略 */ }
+                }
+            }
+
+            function updateEffectNodes() {
+                ensureEffectNodes();
+
+                // 炸麦失真
+                const distOn = effectConfigs.distortion.toggle.checked;
+                const distIntensity = parseInt(effectConfigs.distortion.slider.value) / 100;
+                if (distOn && distIntensity > 0) {
+                    distortionNode.curve = makeDistortionCurve(distIntensity);
+                } else {
+                    distortionNode.curve = makeLinearCurve();
+                }
+
+                // 力竭：低通 + 增益衰减
+                const exhOn = effectConfigs.exhausted.toggle.checked;
+                const exhIntensity = parseInt(effectConfigs.exhausted.slider.value) / 100;
+                if (exhOn && exhIntensity > 0) {
+                    const cutoff = 20000 - exhIntensity * 19500;
+                    lowpassFilter.frequency.setTargetAtTime(Math.max(500, cutoff), audioContext.currentTime, 0.05);
+                    const gainReduction = 1 - exhIntensity * 0.7;
+                    gainNode.gain.setTargetAtTime(Math.max(0.1, gainReduction), audioContext.currentTime, 0.05);
+                } else {
+                    lowpassFilter.frequency.setTargetAtTime(20000, audioContext.currentTime, 0.05);
+                    if (!effectConfigs.exhausted.toggle.checked) {
+                        gainNode.gain.setTargetAtTime(1.0, audioContext.currentTime, 0.05);
+                    }
+                }
+
+                // 蚊子音：高通 + 高频增强
+                const mosOn = effectConfigs.mosquito.toggle.checked;
+                const mosIntensity = parseInt(effectConfigs.mosquito.slider.value) / 100;
+                if (mosOn && mosIntensity > 0) {
+                    const hpCutoff = 20 + mosIntensity * 3500;
+                    highpassFilter.frequency.setTargetAtTime(hpCutoff, audioContext.currentTime, 0.05);
+                    const hsGain = mosIntensity * 18;
+                    highshelfFilter.gain.setTargetAtTime(hsGain, audioContext.currentTime, 0.05);
+                    highshelfFilter.frequency.setTargetAtTime(3000 - mosIntensity * 1500, audioContext.currentTime, 0.05);
+                } else {
+                    highpassFilter.frequency.setTargetAtTime(20, audioContext.currentTime, 0.05);
+                    highshelfFilter.gain.setTargetAtTime(0, audioContext.currentTime, 0.05);
+                }
+            }
+
+            function updateCardState(effectKey) {
+                const card = document.querySelector(`.effect-card[data-effect="${effectKey}"]`);
+                const config = effectConfigs[effectKey];
+                if (card && config) {
+                    if (config.toggle.checked) {
+                        card.classList.add('active-effect');
+                    } else {
+                        card.classList.remove('active-effect');
+                    }
+                }
+            }
+
+            function updateAllCardStates() {
+                Object.keys(effectConfigs).forEach(key => updateCardState(key));
+            }
+
+            // ============ 播放控制 ============
+            function togglePlayback() {
+                if (!audioBuffer) return;
+                if (isPlaying) {
+                    pausePlayback();
+                } else {
+                    startPlayback();
+                }
+            }
+
+            function startPlayback(fromTime = null) {
+                if (!audioBuffer) return;
+                const ctx = getOrCreateAudioContext();
+                ensureEffectNodes();
+
+                // 停止之前的播放
+                if (sourceNode) {
+                    try { sourceNode.stop(); } catch (e) { /* 忽略 */ }
+                    sourceNode.disconnect();
+                    sourceNode = null;
+                }
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+
+                // 更新所有效果
+                updatePlaybackRate();
+                updateEffectNodes();
+
+                // 创建源节点
+                sourceNode = ctx.createBufferSource();
+                sourceNode.buffer = audioBuffer;
+                sourceNode.playbackRate.value = currentPlaybackRate;
+
+                // 连接节点链：source → lowpass → distortion → highpass → highshelf → gain → analyser → destination
+                sourceNode.connect(lowpassFilter);
+                lowpassFilter.connect(distortionNode);
+                distortionNode.connect(highpassFilter);
+                highpassFilter.connect(highshelfFilter);
+                highshelfFilter.connect(gainNode);
+                gainNode.connect(analyserNode);
+                analyserNode.connect(ctx.destination);
+
+                const startOffset = fromTime !== null ? fromTime : playbackPausedAt;
+                if (startOffset >= audioBuffer.duration - 0.01) {
+                    playbackPausedAt = 0;
+                    sourceNode.start(0, 0);
+                } else {
+                    sourceNode.start(0, startOffset);
+                }
+
+                playbackStartTime = ctx.currentTime - startOffset / currentPlaybackRate;
+                playbackPausedAt = startOffset;
+                isPlaying = true;
+                btnPlay.textContent = '⏸';
+                btnPlay.classList.add('playing');
+                updateEffectNodes();
+                startAnimationLoop();
+
+                sourceNode.onended = () => {
+                    if (isPlaying) {
+                        const elapsed = (ctx.currentTime - playbackStartTime) * currentPlaybackRate;
+                        if (elapsed >= audioBuffer.duration - 0.05) {
+                            stopPlayback();
+                        }
+                    }
+                };
+            }
+
+            function pausePlayback() {
+                if (!isPlaying || !audioBuffer) return;
+                const ctx = getOrCreateAudioContext();
+                const elapsed = (ctx.currentTime - playbackStartTime) * currentPlaybackRate;
+                playbackPausedAt = Math.max(0, Math.min(audioBuffer.duration, elapsed));
+                if (sourceNode) {
+                    try { sourceNode.stop(); } catch (e) { /* 忽略 */ }
+                    sourceNode.disconnect();
+                    sourceNode = null;
+                }
+                isPlaying = false;
+                btnPlay.textContent = '▶';
+                btnPlay.classList.remove('playing');
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                updateTimeDisplay(playbackPausedAt);
+                drawWaveformProgress(playbackPausedAt);
+            }
+
+            function stopPlayback() {
+                if (sourceNode) {
+                    try { sourceNode.stop(); } catch (e) { /* 忽略 */ }
+                    sourceNode.disconnect();
+                    sourceNode = null;
+                }
+                isPlaying = false;
+                playbackPausedAt = 0;
+                playbackStartTime = 0;
+                btnPlay.textContent = '▶';
+                btnPlay.classList.remove('playing');
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                updateTimeDisplay(0);
+                drawWaveformProgress(0);
+            }
+
+            function startAnimationLoop() {
+                const ctx = getOrCreateAudioContext();
+
+                function loop() {
+                    if (!isPlaying) return;
+                    const elapsed = (ctx.currentTime - playbackStartTime) * currentPlaybackRate;
+                    const clamped = Math.max(0, Math.min(audioBuffer.duration, elapsed));
+                    updateTimeDisplay(clamped);
+                    drawWaveformProgress(clamped);
+                    if (clamped >= audioBuffer.duration - 0.02) {
+                        stopPlayback();
+                        return;
+                    }
+                    animationFrameId = requestAnimationFrame(loop);
+                }
+                animationFrameId = requestAnimationFrame(loop);
+            }
+
+            function handleWaveformClick(e) {
+                if (!audioBuffer) return;
+                const canvas = waveformCanvas;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const ratio = Math.max(0, Math.min(1, x / rect.width));
+                const seekTime = ratio * audioBuffer.duration;
+                playbackPausedAt = seekTime;
+                if (isPlaying) {
+                    startPlayback(seekTime);
+                } else {
+                    updateTimeDisplay(seekTime);
+                    drawWaveformProgress(seekTime);
+                }
+            }
+
+            function updateTimeDisplay(currentTime) {
+                const dur = audioBuffer ? audioBuffer.duration : 0;
+                timeDisplay.textContent = formatTime(currentTime) + ' / ' + formatTime(dur);
+            }
+
+            // ============ 波形绘制 ============
+            function drawEmptyWaveform() {
+                const canvas = waveformCanvas;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.scale(dpr, dpr);
+                const w = rect.width;
+                const h = rect.height;
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-tertiary').trim() || '#999';
+                ctx.font = '13px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('上传音频后可查看波形', w / 2, h / 2 + 4);
+            }
+
+            function drawWaveform() {
+                if (!audioBuffer) return;
+                const canvas = waveformCanvas;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.scale(dpr, dpr);
+                const w = rect.width;
+                const h = rect.height;
+                ctx.clearRect(0, 0, w, h);
+
+                const data = audioBuffer.getChannelData(0);
+                const step = Math.max(1, Math.floor(data.length / w));
+                const midY = h / 2;
+                const ampScale = h / 2.2;
+
+                // 绘制波形
+                const waveColor = getComputedStyle(document.body).getPropertyValue('--waveform-color').trim() ||
+                    'rgba(255,255,255,0.7)';
+                ctx.strokeStyle = waveColor;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                for (let i = 0; i < w; i++) {
+                    const start = Math.floor(i * step);
+                    const end = Math.floor(Math.min(start + step, data.length));
+                    let maxVal = 0;
+                    for (let j = start; j < end; j++) {
+                        maxVal = Math.max(maxVal, Math.abs(data[j]));
+                    }
+                    const y = maxVal * ampScale;
+                    if (i === 0) ctx.moveTo(i, midY - y);
+                    else ctx.lineTo(i, midY - y);
+                }
+                ctx.stroke();
+
+                ctx.strokeStyle = waveColor;
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                for (let i = 0; i < w; i++) {
+                    const start = Math.floor(i * step);
+                    const end = Math.floor(Math.min(start + step, data.length));
+                    let maxVal = 0;
+                    for (let j = start; j < end; j++) {
+                        maxVal = Math.max(maxVal, Math.abs(data[j]));
+                    }
+                    const y = maxVal * ampScale;
+                    if (i === 0) ctx.moveTo(i, midY + y);
+                    else ctx.lineTo(i, midY + y);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+
+                // 中线
+                ctx.strokeStyle = 'rgba(128,128,128,0.2)';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(0, midY);
+                ctx.lineTo(w, midY);
+                ctx.stroke();
+
+                drawWaveformProgress(playbackPausedAt);
+            }
+
+            function drawWaveformProgress(currentTime) {
+                if (!audioBuffer) return;
+                const canvas = waveformCanvas;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.getBoundingClientRect();
+                // 重绘波形
+                drawWaveformData(ctx, rect, dpr);
+                // 绘制进度线和填充
+                const w = rect.width;
+                const h = rect.height;
+                const ratio = audioBuffer.duration > 0 ? currentTime / audioBuffer.duration : 0;
+                const progressX = ratio * w;
+
+                // 进度填充（半透明）
+                const progressColor = getComputedStyle(document.body).getPropertyValue('--waveform-progress').trim() ||
+                    '#0071e3';
+                ctx.fillStyle = progressColor.replace(')', ', 0.15)').replace('rgb', 'rgba');
+                if (progressColor.startsWith('#')) {
+                    ctx.fillStyle = progressColor + '26';
+                }
+                ctx.fillRect(0, 0, progressX, h);
+
+                // 进度线
+                ctx.strokeStyle = progressColor;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(progressX, 0);
+                ctx.lineTo(progressX, h);
+                ctx.stroke();
+
+                // 圆点
+                ctx.fillStyle = progressColor;
+                ctx.beginPath();
+                ctx.arc(progressX, h / 2, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(progressX, h / 2, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            function drawWaveformData(ctx, rect, dpr) {
+                if (!audioBuffer) return;
+                const w = rect.width;
+                const h = rect.height;
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, w, h);
+
+                const data = audioBuffer.getChannelData(0);
+                const step = Math.max(1, Math.floor(data.length / w));
+                const midY = h / 2;
+                const ampScale = h / 2.2;
+                const waveColor = getComputedStyle(document.body).getPropertyValue('--waveform-color').trim() ||
+                    'rgba(255,255,255,0.7)';
+
+                ctx.strokeStyle = waveColor;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                for (let i = 0; i < w; i++) {
+                    const start = Math.floor(i * step);
+                    const end = Math.floor(Math.min(start + step, data.length));
+                    let maxVal = 0;
+                    for (let j = start; j < end; j++) maxVal = Math.max(maxVal, Math.abs(data[j]));
+                    const y = maxVal * ampScale;
+                    if (i === 0) ctx.moveTo(i, midY - y);
+                    else ctx.lineTo(i, midY - y);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                for (let i = 0; i < w; i++) {
+                    const start = Math.floor(i * step);
+                    const end = Math.floor(Math.min(start + step, data.length));
+                    let maxVal = 0;
+                    for (let j = start; j < end; j++) maxVal = Math.max(maxVal, Math.abs(data[j]));
+                    const y = maxVal * ampScale;
+                    if (i === 0) ctx.moveTo(i, midY + y);
+                    else ctx.lineTo(i, midY + y);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = 'rgba(128,128,128,0.2)';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(0, midY);
+                ctx.lineTo(w, midY);
+                ctx.stroke();
+            }
+
+            // ============ 导出 ============
+            async function exportAudio() {
+                if (!audioBuffer) return;
+                btnExport.disabled = true;
+                btnExport.innerHTML =
+                    '<span class="processing-indicator"></span> 处理中...';
+                try {
+                    const offlineCtx = new OfflineAudioContext(
+                        audioBuffer.numberOfChannels,
+                        Math.ceil(audioBuffer.duration * currentPlaybackRate * audioBuffer.sampleRate) + 44100,
+                        audioBuffer.sampleRate
+                    );
+
+                    const offlineSource = offlineCtx.createBufferSource();
+                    offlineSource.buffer = audioBuffer;
+                    offlineSource.playbackRate.value = currentPlaybackRate;
+
+                    // 构建相同的效果链
+                    const offGain = offlineCtx.createGain();
+                    const offDistortion = offlineCtx.createWaveShaper();
+                    const offLowpass = offlineCtx.createBiquadFilter();
+                    const offHighpass = offlineCtx.createBiquadFilter();
+                    const offHighshelf = offlineCtx.createBiquadFilter();
+
+                    offLowpass.type = 'lowpass';
+                    offLowpass.Q.value = 0.7;
+                    offHighpass.type = 'highpass';
+                    offHighpass.Q.value = 0.7;
+                    offHighshelf.type = 'highshelf';
+
+                    // 应用效果参数
+                    const distOn = effectConfigs.distortion.toggle.checked;
+                    const distIntensity = parseInt(effectConfigs.distortion.slider.value) / 100;
+                    offDistortion.curve = (distOn && distIntensity > 0) ? makeDistortionCurve(distIntensity) :
+                        makeLinearCurve();
+                    offDistortion.oversample = '4x';
+
+                    const exhOn = effectConfigs.exhausted.toggle.checked;
+                    const exhIntensity = parseInt(effectConfigs.exhausted.slider.value) / 100;
+                    offLowpass.frequency.value = (exhOn && exhIntensity > 0) ? Math.max(500, 20000 - exhIntensity *
+                        19500) : 20000;
+                    offGain.gain.value = (exhOn && exhIntensity > 0) ? Math.max(0.1, 1 - exhIntensity * 0.7) : 1.0;
+
+                    const mosOn = effectConfigs.mosquito.toggle.checked;
+                    const mosIntensity = parseInt(effectConfigs.mosquito.slider.value) / 100;
+                    offHighpass.frequency.value = (mosOn && mosIntensity > 0) ? 20 + mosIntensity * 3500 : 20;
+                    offHighshelf.gain.value = (mosOn && mosIntensity > 0) ? mosIntensity * 18 : 0;
+                    offHighshelf.frequency.value = (mosOn && mosIntensity > 0) ? 3000 - mosIntensity * 1500 : 4000;
+
+                    // 连接链
+                    offlineSource.connect(offLowpass);
+                    offLowpass.connect(offDistortion);
+                    offDistortion.connect(offHighpass);
+                    offHighpass.connect(offHighshelf);
+                    offHighshelf.connect(offGain);
+                    offGain.connect(offlineCtx.destination);
+
+                    offlineSource.start(0);
+                    const renderedBuffer = await offlineCtx.startRendering();
+
+                    // 转换为WAV并下载
+                    const wavBlob = audioBufferToWav(renderedBuffer);
+                    const url = URL.createObjectURL(wavBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const originalName = fileNameEl.textContent.replace(/\.[^.]+$/, '');
+                    a.download = (originalName || 'audio') + '_特效版.wav';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast('🎉 导出成功！');
+                } catch (err) {
+                    console.error('导出失败:', err);
+                    showToast('❌ 导出失败，请重试');
+                } finally {
+                    btnExport.disabled = false;
+                    btnExport.innerHTML = '📥 导出音频 (WAV)';
+                }
+            }
+
+            function audioBufferToWav(buffer) {
+                const numChannels = buffer.numberOfChannels;
+                const sampleRate = buffer.sampleRate;
+                const length = buffer.length;
+                const bitsPerSample = 16;
+                const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+                const blockAlign = numChannels * (bitsPerSample / 8);
+                const dataSize = length * numChannels * (bitsPerSample / 8);
+                const headerSize = 44;
+                const totalSize = headerSize + dataSize;
+
+                const arrayBuffer = new ArrayBuffer(totalSize);
+                const view = new DataView(arrayBuffer);
+
+                // RIFF头
+                writeString(view, 0, 'RIFF');
+                view.setUint32(4, totalSize - 8, true);
+                writeString(view, 8, 'WAVE');
+                writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true);
+                view.setUint16(22, numChannels, true);
+                view.setUint32(24, sampleRate, true);
+                view.setUint32(28, byteRate, true);
+                view.setUint16(32, blockAlign, true);
+                view.setUint16(34, bitsPerSample, true);
+                writeString(view, 36, 'data');
+                view.setUint32(40, dataSize, true);
+
+                // 写入采样数据
+                const channelData = [];
+                for (let ch = 0; ch < numChannels; ch++) {
+                    channelData.push(buffer.getChannelData(ch));
+                }
+                let offset = 44;
+                for (let i = 0; i < length; i++) {
+                    for (let ch = 0; ch < numChannels; ch++) {
+                        const sample = Math.max(-1, Math.min(1, channelData[ch][i]));
+                        const intSample = sample < 0 ? sample * 32768 : sample * 32767;
+                        view.setInt16(offset, Math.round(intSample), true);
+                        offset += 2;
+                    }
+                }
+                return new Blob([arrayBuffer], { type: 'audio/wav' });
+            }
+
+            function writeString(view, offset, str) {
+                for (let i = 0; i < str.length; i++) {
+                    view.setUint8(offset + i, str.charCodeAt(i));
+                }
+            }
+
+            // ============ 主题切换 ============
+            function toggleTheme() {
+                isDarkMode = !isDarkMode;
+                if (isDarkMode) {
+                    document.body.classList.remove('light-mode');
+                    themeToggle.textContent = '🌙';
+                    localStorage.setItem('audioEditorTheme', 'dark');
+                } else {
+                    document.body.classList.add('light-mode');
+                    themeToggle.textContent = '☀️';
+                    localStorage.setItem('audioEditorTheme', 'light');
+                }
+                // 重绘波形
+                setTimeout(() => {
+                    if (audioBuffer) drawWaveform();
+                    else drawEmptyWaveform();
+                    if (audioBuffer && playbackPausedAt > 0) drawWaveformProgress(playbackPausedAt);
+                }, 400);
+            }
+
+            // ============ Toast ============
+            let toastTimer;
+
+            function showToast(message) {
+                clearTimeout(toastTimer);
+                toast.textContent = message;
+                toast.classList.add('show');
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2200);
+            }
+
+            // ============ 工具函数 ============
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                const ms = Math.floor((seconds % 1) * 100);
+                return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0') + '.' + String(ms).padStart(2,
+                    '0');
+            }
+
+            // ============ 启动 ============
+            init();
+            console.log('🎛️ 音频特效编辑器已就绪');
+            console.log('  💥 炸麦音效 — 硬裁剪失真');
+            console.log('  🎈 氦气音效 2× — 双倍音调');
+            console.log('  🎵 氦气音效 1.5× — 1.5倍音调');
+            console.log('  😮‍💨 力竭音效 — 低通滤波+衰减');
+            console.log('  🪨 粗犷音色 — 音速0.75/音调降低');
+            console.log('  🦟 蚊子音效 — 高通滤波+高频增强');
+            console.log('  支持叠加 | 强度可调 | 深色/浅色 | 导出WAV');
+        })();
+    </script>
+</body>
+</html>
