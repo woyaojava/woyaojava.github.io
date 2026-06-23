@@ -1,1 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi 小鸡巴</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:#e8f5e9;
+            min-height:100vh;
+            overflow:hidden;
+            font-family:Arial,sans-serif;
+        }
+        .info{
+            text-align:center;
+            padding:15px;
+            font-size:22px;
+            font-weight:bold;
+            color:#2e7d32;
+        }
+        #gameBox{
+            width:100vw;
+            height:80vh;
+            position:relative;
+        }
+        .role{
+            width:100px;
+            cursor:pointer;
+            position:absolute;
+            transition: all 0.2s ease;
+        }
+        .btn{
+            display:block;
+            margin:10px auto;
+            padding:10px 30px;
+            border:none;
+            background:#4caf50;
+            color:#fff;
+            font-size:18px;
+            border-radius:8px;
+            cursor:pointer;
+        }
+        .btn:hover{background:#388e3c;}
+    </style>
+</head>
+<body>
+    <div class="info">
+        分数：<span id="score">0</span> | 剩余时间：<span id="time">30</span>秒
+    </div>
+    <button class="btn" id="startBtn">开始游戏</button>
+    <div id="gameBox"></div>
 
+<script>
+
+const gifSrc = "https://i1.hdslb.com/bfs/face/0410b0c9a49fe02dd8403c99a72753abfc929112.jpg@168w_168h_1c.webp"; 
+
+let score = 0;
+let time = 30;
+let timer = null;
+let gameRun = false;
+const gameBox = document.getElementById("gameBox");
+const scoreDom = document.getElementById("score");
+const timeDom = document.getElementById("time");
+const startBtn = document.getElementById("startBtn");
+
+function getRandomPos(){
+    let w = window.innerWidth - 120;
+    let h = window.innerHeight * 0.8 - 120;
+    return {
+        x:Math.random()*w,
+        y:Math.random()*h
+    }
+}
+
+function createRole(){
+    let img = document.createElement("img");
+    img.src = gifSrc;
+    img.className = "role";
+    let pos = getRandomPos();
+    img.style.left = pos.x + "px";
+    img.style.top = pos.y + "px";
+    
+    // 按下瞬间触发（鼠标、手指都支持）
+    function onPress() {
+        score++;
+        scoreDom.innerText = score;
+        // 瞬移
+        let newPos = getRandomPos();
+        img.style.left = newPos.x + "px";
+        img.style.top = newPos.y + "px";
+    }
+    
+    img.onmousedown = onPress;
+    img.ontouchstart = onPress;
+    
+    gameBox.appendChild(img);
+}
+
+function clearRole(){
+    gameBox.innerHTML = "";
+}
+
+startBtn.onclick = function(){
+    if(gameRun)return;
+    gameRun = true;
+    score = 0;
+    time = 30;
+    scoreDom.innerText = 0;
+    timeDom.innerText = 30;
+    clearRole();
+    // 生成3个小人
+    for(let i=0;i<3;i++) createRole();
+
+    // 倒计时
+    timer = setInterval(()=>{
+        time--;
+        timeDom.innerText = time;
+        if(time <= 0){
+            clearInterval(timer);
+            gameRun = false;
+            alert(`游戏结束！你的得分：${score} 分`);
+            clearRole();
+        }
+    },1000)
+}
+</script>
+</body>
+</html>
