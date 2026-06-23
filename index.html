@@ -27,7 +27,6 @@
             position: fixed;
             left: 50%;
             top: 50%;
-            /* 使用 transform 控制位置，避免 top 动画触发布局 */
             transform: translate(-50%, -50%);
             width: 100%;
             max-width: 780px;
@@ -44,27 +43,8 @@
             pointer-events: auto;
         }
 
-        /* 上移：调整 translate 的 Y 值，向上移动 */
-        .container.shifted {
-            transform: translate(-50%, calc(-50% + 20px)); /* 从视口中心向上移动，最终顶部留白 */
-            /* 实际偏移量需根据标题高度微调，这里以 20px 为顶部留白，但需要计算标题自身高度 */
-            /* 更精确：使用 calc(-50% + 偏移) 但偏移量需结合标题大小，我们使用 vh 单位更可靠 */
-            /* 改为：向上移动视口高度的一半再减去标题占用空间 */
-            transform: translate(-50%, calc(-50% + 20px - 50vh + 标题高度));
-            /* 但标题高度是动态的，我们改用固定偏移：直接上移到顶部 */
-            /* 简单方式：用 vh 和 rem 组合 */
-            transform: translate(-50%, calc(-50vh + 80px));
-            /* 这样标题会从中心移动到顶部，留出约 80px 空白 */
-        }
-
-        /* 更稳妥的：使用 top 配合 transform，但 top 可能卡，只用 transform 平移 */
-        /* 我们使用固定定位，left:50%; top:50%; 然后 transform: translate(-50%, -50%) 居中 */
-        /* 上移时变换为 translate(-50%, -100% + 20px) 等，但为了留白，我们用 calc(-50vh + 80px) */
-        /* 更好的方式：用 translateY 单独控制 */
         .container.shifted {
             transform: translate(-50%, calc(-50vh + 80px));
-            /* 从视口中心移动到距顶部 80px 处 */
-            /* 这样不依赖 top 属性，完全由 transform 驱动，GPU加速 */
         }
 
         .title-wrapper {
@@ -264,7 +244,7 @@
         </div>
         <div class="button-grid" id="buttonGrid">
             <a href="https://woyaojava.github.io/game/" target="_blank" class="btn" id="btn1">游戏</a>
-            <a href="#" class="btn" id="btn2">按钮二</a>
+            <a href="https://woyaojava.github.io/leiting" target="_blank" class="btn" id="btn2">雷霆</a>
             <a href="#" class="btn" id="btn3">按钮三</a>
             <a href="#" class="btn" id="btn4">按钮四</a>
             <a href="#" class="btn" id="btn5">按钮五</a>
@@ -341,12 +321,10 @@
             });
 
             // ---- 占位按钮 ----
-            var btn2 = document.getElementById('btn2');
             var btn3 = document.getElementById('btn3');
             var btn4 = document.getElementById('btn4');
             var btn5 = document.getElementById('btn5');
             function delayedAlert(msg) { setTimeout(function() { alert(msg); }, 180); }
-            btn2.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮二功能待添加'); });
             btn3.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮三功能待添加'); });
             btn4.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮四功能待添加'); });
             btn5.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮五功能待添加'); });
@@ -389,7 +367,6 @@
                     };
                     poops.push(obj);
 
-                    // ---- 拖拽事件 ----
                     (function(p) {
                         function onStart(e) {
                             e.preventDefault();
@@ -423,7 +400,6 @@
                                 p.vy = (Math.random() - 0.5) * 4 - 2;
                             }
                         }
-
                         el.addEventListener('mousedown', onStart);
                         document.addEventListener('mousemove', onMove);
                         document.addEventListener('mouseup', onEnd);
