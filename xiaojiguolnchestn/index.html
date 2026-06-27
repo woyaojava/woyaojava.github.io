@@ -5,159 +5,496 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>打小鸡裹lnchestn</title>
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; height: 100vh; overflow: hidden; background: #f0f0f0; }
-        #gameContainer {
-            position: relative; width: 100vw; height: 100vh;
-            background: #e8f5e9;
-            overflow: hidden;
-            touch-action: none; 
+        /* ===== 全局重置 ===== */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #f0f0f0;
+            touch-action: none;
+        }
+
+        /* ===== 游戏容器 ===== */
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* ===== 顶部UI ===== */
         #ui {
-            position: absolute; top: 20px; left: 0; width: 100%;
-            display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box;
-            z-index: 999;
+            position: absolute;
+            top: 16px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-sizing: border-box;
+            z-index: 100;
+            pointer-events: none;
         }
         #ui div {
-            background: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 8px; font-size: 22px; font-weight: bold;
+            background: rgba(0, 0, 0, 0.72);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            pointer-events: auto;
         }
-        
-        /* ========== 【按钮：彻底去除蓝框核心代码】 ========== */
-        button, #startBtn, .btn-restart, .btn-share {
+        #scoreDisplay {
+            background: rgba(255, 71, 87, 0.85) !important;
+        }
+        #timerDisplay {
+            background: rgba(44, 62, 80, 0.85) !important;
+        }
+
+        /* ===== 按钮蓝框彻底去除 ===== */
+        button,
+        #startBtn,
+        .btn-restart,
+        .btn-share,
+        .diff-btn {
             outline: none !important;
-            -webkit-tap-highlight-color: transparent !important; /* 干掉移动端的点击高亮蓝框 */
+            -webkit-tap-highlight-color: transparent !important;
             box-shadow: none !important;
+            user-select: none;
+            -webkit-user-select: none;
         }
-        button:focus, button:active,
-        #startBtn:focus, #startBtn:active,
-        .btn-restart:focus, .btn-restart:active,
-        .btn-share:focus, .btn-share:active {
+        button:focus,
+        button:active,
+        #startBtn:focus,
+        #startBtn:active,
+        .btn-restart:focus,
+        .btn-restart:active,
+        .btn-share:focus,
+        .btn-share:active,
+        .diff-btn:focus,
+        .diff-btn:active {
             outline: none !important;
             -webkit-tap-highlight-color: transparent !important;
         }
-        /* =================================================== */
 
+        /* ===== 开始按钮 ===== */
         #startBtn {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            padding: 15px 40px; font-size: 24px; font-weight: bold;
-            background: #ff4757; color: white; border: none; border-radius: 10px; cursor: pointer; z-index: 999;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-            transition: 0.2s;
-        }
-        #startBtn:hover { transform: translate(-50%, -50%) scale(1.05); }
-        .game-item {
-            position: absolute; 
-            width: 120px; 
-            height: 120px; 
+            position: absolute;
+            top: 62%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 16px 48px;
+            font-size: 26px;
+            font-weight: 800;
+            background: #ff4757;
+            color: #fff;
+            border: none;
+            border-radius: 60px;
             cursor: pointer;
-            background-size: cover; background-position: center; background-repeat: no-repeat;
-            border-radius: 12px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
-            -webkit-user-drag: none; user-drag: none; outline: none;
-            -webkit-tap-highlight-color: transparent; 
+            z-index: 200;
+            box-shadow: 0 8px 30px rgba(255, 71, 87, 0.45);
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+            letter-spacing: 1px;
+        }
+        #startBtn:hover {
+            transform: translate(-50%, -50%) scale(1.06);
+            box-shadow: 0 12px 40px rgba(255, 71, 87, 0.55);
+        }
+        #startBtn:active {
+            transform: translate(-50%, -50%) scale(0.94);
         }
 
-        /* ========== 【内嵌弹窗样式】 ========== */
+        /* ===== 难度选择器 ===== */
+        #difficultySelector {
+            position: absolute;
+            top: 28%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 22px 24px 26px;
+            border-radius: 28px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
+            width: 88%;
+            max-width: 400px;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: auto;
+        }
+        #difficultySelector.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.92);
+        }
+        #difficultySelector .label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3436;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .diff-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        .diff-btn {
+            flex: 1;
+            min-width: 56px;
+            padding: 10px 6px;
+            border: 2px solid #dfe6e9;
+            border-radius: 40px;
+            background: #f8f9fa;
+            font-size: 15px;
+            font-weight: 700;
+            color: #2d3436;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 0.3px;
+            touch-action: manipulation;
+        }
+        .diff-btn:active {
+            transform: scale(0.94);
+        }
+        .diff-btn.active {
+            border-color: #ff4757;
+            background: #ff4757;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(255, 71, 87, 0.35);
+        }
+        .diff-btn .sub {
+            display: block;
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+        .diff-btn.active .sub {
+            opacity: 0.9;
+        }
+
+        /* ===== 游戏目标（小鸡） ===== */
+        .game-item {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            user-drag: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: box-shadow 0.15s;
+            will-change: transform, left, top;
+        }
+        .game-item:active {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .game-item.big {
+            border-radius: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+        }
+        .game-item.big:active {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        .game-item.pop {
+            animation: popAnim 0.18s ease;
+        }
+        @keyframes popAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.88); }
+            100% { transform: scale(1); }
+        }
+
+        /* ===== 弹窗 ===== */
         #customModal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: none; 
-            justify-content: center; align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            display: none;
+            justify-content: center;
+            align-items: center;
             z-index: 9999;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
         }
         .modal-content {
-            background: #ffffff; width: 85%; max-width: 380px;
-            border-radius: 20px; padding: 25px; box-sizing: border-box;
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #ffffff;
+            width: 88%;
+            max-width: 380px;
+            border-radius: 28px;
+            padding: 28px 24px 24px;
+            box-sizing: border-box;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: scale(0.78) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
         }
-        .modal-content h2 { margin: 0 0 15px 0; font-size: 22px; color: #333; }
-        .modal-content img {
-            width: 100%; max-width: 200px; border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px; 
-            display: block; margin-left: auto; margin-right: auto;
+        .modal-content h2 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            color: #2d3436;
+        }
+        .modal-content #modeDisplay {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 8px;
+            background: #f1f3f5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .modal-content #resultImg {
+            width: 100%;
+            max-width: 180px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            margin-bottom: 12px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         .modal-content .final-score {
-            font-size: 40px; font-weight: bold; color: #ff4757; margin: 10px 0;
+            font-size: 44px;
+            font-weight: 800;
+            color: #ff4757;
+            margin: 6px 0 12px;
         }
         .modal-content .share-text {
-            background: #f1f3f5; padding: 10px; border-radius: 8px;
-            font-size: 14px; color: #555; text-align: left; margin-bottom: 15px;
-            word-break: break-all; line-height: 1.5; border: 1px solid #e9ecef;
+            background: #f1f3f5;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #555;
+            text-align: left;
+            margin-bottom: 16px;
+            word-break: break-all;
+            line-height: 1.6;
+            border: 1px solid #e9ecef;
             opacity: 0;
             transition: opacity 0.5s;
         }
-        .modal-content .share-text.show { opacity: 1; }
+        .modal-content .share-text.show {
+            opacity: 1;
+        }
         .modal-actions {
-            display: flex; gap: 10px; margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
-        .modal-actions.show { opacity: 1; }
+        .modal-actions.show {
+            opacity: 1;
+        }
         .modal-actions button {
-            flex: 1; padding: 12px; border: none; border-radius: 12px;
-            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
-            outline: none; -webkit-tap-highlight-color: transparent;
+            flex: 1;
+            padding: 13px 8px;
+            border: none;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
-        .btn-restart { background: #f1f3f5; color: #333; }
-        .btn-restart:hover { background: #e9ecef; }
-        .btn-share { background: #ff4757; color: white; }
-        .btn-share:hover { background: #e03e4e; transform: scale(1.02); }
-        .btn-share:active { transform: scale(0.95); }
+        .modal-actions button:active {
+            transform: scale(0.94);
+        }
+        .btn-restart {
+            background: #f1f3f5;
+            color: #2d3436;
+        }
+        .btn-restart:hover {
+            background: #e9ecef;
+        }
+        .btn-share {
+            background: #ff4757;
+            color: #fff;
+        }
+        .btn-share:hover {
+            background: #e03e4e;
+        }
 
-        /* ========== 【内嵌提示条样式】 ========== */
+        /* ===== Toast 提示条 ===== */
         #toastMsg {
-            position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); color: white;
-            padding: 12px 24px; border-radius: 30px; font-size: 16px; font-weight: bold;
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
             z-index: 99999;
-            opacity: 0; pointer-events: none;
+            opacity: 0;
+            pointer-events: none;
             transition: opacity 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
             white-space: nowrap;
+            backdrop-filter: blur(4px);
         }
-        #toastMsg.show { opacity: 1; pointer-events: auto; }
+        #toastMsg.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ===== 响应式微调 ===== */
+        @media (max-width: 480px) {
+            #ui div {
+                font-size: 15px;
+                padding: 6px 14px;
+            }
+            #startBtn {
+                font-size: 20px;
+                padding: 14px 36px;
+                top: 64%;
+            }
+            .diff-btn {
+                font-size: 13px;
+                padding: 8px 4px;
+                min-width: 44px;
+            }
+            .game-item {
+                width: 100px;
+                height: 100px;
+            }
+            .modal-content {
+                padding: 22px 18px 20px;
+            }
+            .modal-content .final-score {
+                font-size: 36px;
+            }
+            #difficultySelector {
+                padding: 18px 16px 20px;
+                gap: 10px;
+                top: 26%;
+            }
+        }
+        @media (max-width: 380px) {
+            .game-item {
+                width: 80px;
+                height: 80px;
+            }
+            .diff-btn {
+                font-size: 11px;
+                padding: 6px 2px;
+                min-width: 36px;
+            }
+            #difficultySelector .label {
+                font-size: 13px;
+            }
+            #startBtn {
+                top: 66%;
+                font-size: 18px;
+                padding: 12px 28px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- HTML结构不变，保持原本代码即可 -->
+
+    <!-- ===== 游戏容器 ===== -->
     <div id="gameContainer">
+        <!-- 顶部信息 -->
         <div id="ui">
-            <div id="scoreDisplay">得分: 0</div>
-            <div id="timerDisplay">时间: 30s</div>
+            <div id="scoreDisplay">🏆 0</div>
+            <div id="timerDisplay">⏱ 30s</div>
         </div>
-        <button id="startBtn">开始游戏</button>
+
+        <!-- 难度选择器 -->
+        <div id="difficultySelector">
+            <div class="label">🎯 选择难度</div>
+            <div class="diff-group">
+                <button class="diff-btn active" data-diff="easy">
+                    简单
+                    <span class="sub">5 目标</span>
+                </button>
+                <button class="diff-btn" data-diff="normal">
+                    普通
+                    <span class="sub">3 目标</span>
+                </button>
+                <button class="diff-btn" data-diff="hard">
+                    困难
+                    <span class="sub">1 目标</span>
+                </button>
+                <button class="diff-btn" data-diff="combo">
+                    连打
+                    <span class="sub">大目标·居中</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 开始按钮 -->
+        <button id="startBtn">▶ 开始游戏</button>
     </div>
 
-    <!-- 弹窗结构 -->
+    <!-- ===== 成绩弹窗（新增模式显示） ===== -->
     <div id="customModal">
         <div class="modal-content">
             <h2>🎉 时间到！</h2>
+            <!-- 模式显示 -->
+            <div id="modeDisplay">模式：简单</div>
             <img id="resultImg" src="1.jpg" alt="成绩图">
             <div class="final-score" id="resultScore">0 分</div>
             <div class="share-text" id="shareTextPreview">我在打小鸡裹lnchestn中获得了0分，你也来试试吧！</div>
             <div class="modal-actions" id="modalActions">
-                <button class="btn-restart" id="restartBtn">再来一局</button>
+                <button class="btn-restart" id="restartBtn">🔄 再来一局</button>
                 <button class="btn-share" id="shareBtn">📋 复制分享</button>
             </div>
         </div>
     </div>
 
-    <!-- 提示条结构 -->
+    <!-- ===== Toast 提示 ===== -->
     <div id="toastMsg"></div>
 
     <script>
-        // JS部分和之前完全一样，不需要改动，保持同步即可。
+        // ============================================================
+        //  DOM 引用
+        // ============================================================
         const container = document.getElementById('gameContainer');
         const startBtn = document.getElementById('startBtn');
         const scoreDisplay = document.getElementById('scoreDisplay');
         const timerDisplay = document.getElementById('timerDisplay');
-        
+        const difficultySelector = document.getElementById('difficultySelector');
+        const diffBtns = document.querySelectorAll('.diff-btn');
+
         const modal = document.getElementById('customModal');
         const resultScore = document.getElementById('resultScore');
         const shareTextPreview = document.getElementById('shareTextPreview');
@@ -165,15 +502,23 @@
         const restartBtn = document.getElementById('restartBtn');
         const shareBtn = document.getElementById('shareBtn');
         const toastMsg = document.getElementById('toastMsg');
-        
+        const modeDisplay = document.getElementById('modeDisplay'); // 新增
+
+        // ============================================================
+        //  状态变量
+        // ============================================================
         let score = 0;
         let timeLeft = 30;
         let timerInterval = null;
         let items = [];
         let audio = null;
         let audioStarted = false;
+        let currentDifficulty = 'easy';
+        let isGameRunning = false;
 
-        // ========== 【环境检测】 ==========
+        // ============================================================
+        //  环境检测（分享功能）
+        // ============================================================
         function isWebEnvironment() {
             if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return false;
             const ua = navigator.userAgent.toLowerCase();
@@ -185,46 +530,56 @@
         }
         const canShare = isWebEnvironment();
 
-        // ========== 【音乐逻辑】 ==========
+        // ============================================================
+        //  音频
+        // ============================================================
         function initAudio() {
             if (audio) return;
             audio = new Audio('1.mp3');
             audio.loop = true;
-            audio.volume = 0.4; 
+            audio.volume = 0.4;
         }
+
         function wakeUpMusic() {
             if (audio && audio.paused && !audioStarted) {
-                audio.play().then(() => { audioStarted = true; });
+                audio.play().then(() => { audioStarted = true; }).catch(() => {});
                 document.removeEventListener('pointerdown', wakeUpMusic);
             }
         }
-        window.onload = function() { 
+        window.onload = function() {
             initAudio();
             document.addEventListener('pointerdown', wakeUpMusic);
         };
 
-        // ========== 【内嵌提示条功能】 ==========
+        // ============================================================
+        //  Toast
+        // ============================================================
         function showToast(text, isSuccess = true) {
             toastMsg.textContent = text;
-            toastMsg.style.background = isSuccess ? 'rgba(46, 204, 113, 0.9)' : 'rgba(231, 76, 60, 0.9)';
+            toastMsg.style.background = isSuccess ? 'rgba(46, 204, 113, 0.92)' : 'rgba(231, 76, 60, 0.92)';
             toastMsg.classList.add('show');
             clearTimeout(window.toastTimer);
             window.toastTimer = setTimeout(() => {
                 toastMsg.classList.remove('show');
-            }, 3000);
+            }, 2800);
         }
 
-        // ========== 【游戏逻辑】 ==========
-        function getRandomPosition() {
-            const size = 120;
-            const x = Math.random() * (container.clientWidth - size);
-            const y = Math.random() * (container.clientHeight - size);
+        // ============================================================
+        //  工具函数
+        // ============================================================
+        function getRandomPosition(size) {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            const x = Math.random() * (w - size);
+            const y = Math.random() * (h - size);
             return { x, y };
         }
-        function smoothMove(element, targetX, targetY, duration = 400) {
-            const startX = parseFloat(element.style.left);
-            const startY = parseFloat(element.style.top);
+
+        function smoothMove(element, targetX, targetY, duration = 380) {
+            const startX = parseFloat(element.style.left) || 0;
+            const startY = parseFloat(element.style.top) || 0;
             const startTime = performance.now();
+
             function animate(time) {
                 const elapsed = time - startTime;
                 const progress = Math.min(elapsed / duration, 1);
@@ -235,59 +590,131 @@
             }
             requestAnimationFrame(animate);
         }
-        function createCat() {
+
+        // ============================================================
+        //  创建目标（连打居中 + 大尺寸）
+        // ============================================================
+        function createCat(isStatic = false, size = 120) {
             const div = document.createElement('div');
             div.className = 'game-item';
-            div.style.backgroundImage = 'url(1.jpg)'; 
+            if (isStatic) div.classList.add('big');
+            div.style.backgroundImage = 'url(1.jpg)';
             div.setAttribute('draggable', 'false');
-            const initPos = getRandomPosition();
-            div.style.left = initPos.x + 'px';
-            div.style.top = initPos.y + 'px';
+
+            let pos;
+            if (isStatic) {
+                const x = (container.clientWidth - size) / 2;
+                const y = (container.clientHeight - size) / 2;
+                pos = { x, y };
+            } else {
+                pos = getRandomPosition(size);
+            }
+
+            div.style.left = pos.x + 'px';
+            div.style.top = pos.y + 'px';
+            div.style.width = size + 'px';
+            div.style.height = size + 'px';
+
             div.addEventListener('pointerdown', function(e) {
                 e.preventDefault();
+                this.classList.remove('pop');
+                void this.offsetWidth;
+                this.classList.add('pop');
+
                 score++;
-                scoreDisplay.textContent = '得分: ' + score;
-                const newPos = getRandomPosition();
-                smoothMove(this, newPos.x, newPos.y);
+                scoreDisplay.textContent = '🏆 ' + score;
+
+                if (!isStatic) {
+                    const newPos = getRandomPosition(size);
+                    smoothMove(this, newPos.x, newPos.y);
+                }
             });
+
             container.appendChild(div);
             items.push(div);
+            return div;
         }
-        function startGame() {
-            if (audio) {
-                if (audio.paused) { audio.play(); audioStarted = true; }
-                audio.volume = 1.0; 
+
+        // ============================================================
+        //  难度配置
+        // ============================================================
+        function getDifficultyConfig(diff) {
+            switch (diff) {
+                case 'easy':   return { count: 5, size: 120, static: false };
+                case 'normal': return { count: 3, size: 120, static: false };
+                case 'hard':   return { count: 1, size: 120, static: false };
+                case 'combo':  return { count: 1, size: 240, static: true };
+                default:       return { count: 5, size: 120, static: false };
             }
+        }
+
+        // 获取模式中文名
+        function getModeName(diff) {
+            const map = {
+                'easy': '简单',
+                'normal': '普通',
+                'hard': '困难',
+                'combo': '连打'
+            };
+            return map[diff] || diff;
+        }
+
+        // ============================================================
+        //  游戏核心
+        // ============================================================
+        function startGame() {
+            if (isGameRunning) return;
+            isGameRunning = true;
+
+            difficultySelector.classList.add('hidden');
+            startBtn.style.display = 'none';
+
+            if (audio) {
+                if (audio.paused) { audio.play().catch(() => {}); }
+                audio.volume = 1.0;
+                audioStarted = true;
+            }
+
             clearInterval(timerInterval);
             items.forEach(item => item.remove());
             items = [];
+
             score = 0;
             timeLeft = 30;
-            scoreDisplay.textContent = '得分: 0';
-            timerDisplay.textContent = '时间: 30s';
-            startBtn.style.display = 'none';
+            scoreDisplay.textContent = '🏆 0';
+            timerDisplay.textContent = '⏱ 30s';
 
-            for (let i = 0; i < 5; i++) createCat();
+            const config = getDifficultyConfig(currentDifficulty);
+            for (let i = 0; i < config.count; i++) {
+                createCat(config.static, config.size);
+            }
 
             timerInterval = setInterval(() => {
                 timeLeft--;
-                timerDisplay.textContent = '时间: ' + timeLeft + 's';
+                timerDisplay.textContent = '⏱ ' + timeLeft + 's';
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     endGame();
                 }
             }, 1000);
         }
+
         function endGame() {
+            isGameRunning = false;
+
             items.forEach(item => item.remove());
             items = [];
-            
+
             startBtn.style.display = 'block';
             startBtn.style.opacity = '0';
             startBtn.style.pointerEvents = 'none';
 
+            // 更新结算信息
             resultScore.textContent = score + ' 分';
-            const shareText = "我在打小鸡裹lnchestn中获得了" + score + "分，你也来试试吧！";
+            const modeName = getModeName(currentDifficulty);
+            modeDisplay.textContent = '🎯 模式：' + modeName;
+
+            const shareText = '我在打小鸡裹lnchestn中获得了' + score + '分（' + modeName + '模式），你也来试试吧！';
             shareTextPreview.textContent = shareText;
 
             modalActions.classList.remove('show');
@@ -297,7 +724,7 @@
             setTimeout(() => {
                 shareTextPreview.classList.add('show');
                 modalActions.classList.add('show');
-                
+
                 if (!canShare) {
                     shareBtn.style.display = 'none';
                     restartBtn.style.flex = '1';
@@ -307,23 +734,33 @@
                     restartBtn.style.flex = '1';
                     shareBtn.style.flex = '1';
                 }
-            }, 1000);
+            }, 600);
+
+            if (audio) { audio.volume = 0.4; }
         }
 
-        // ========== 【弹窗按钮交互】 ==========
+        // ============================================================
+        //  弹窗按钮
+        // ============================================================
         restartBtn.addEventListener('click', function() {
             modal.style.display = 'none';
             if (audio) { audio.volume = 0.4; }
+
             startBtn.style.opacity = '1';
             startBtn.style.pointerEvents = 'auto';
+            startBtn.style.display = 'block';
+            difficultySelector.classList.remove('hidden');
+
             shareBtn.style.display = '';
             restartBtn.style.flex = '';
             restartBtn.style.width = '';
+
+            isGameRunning = false;
         });
 
         shareBtn.addEventListener('click', async function() {
             if (!canShare) {
-                showToast('❌ 当前环境不支持复制功能', false);
+                showToast('❌ 当前环境不支持复制', false);
                 return;
             }
             const textToCopy = shareTextPreview.textContent;
@@ -346,14 +783,41 @@
             try {
                 const successful = document.execCommand('copy');
                 if (successful) showToast('✅ 复制成功！快分享给朋友吧~', true);
-                else showToast('❌ 复制失败，请长按下方文字手动复制。', false);
+                else showToast('❌ 复制失败，请长按文字手动复制。', false);
             } catch (err) {
-                showToast('❌ 复制失败，请长按下方文字手动复制。', false);
+                showToast('❌ 复制失败，请长按文字手动复制。', false);
             }
             document.body.removeChild(textArea);
         });
 
-        startBtn.onclick = startGame;
+        // ============================================================
+        //  难度选择交互
+        // ============================================================
+        diffBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                diffBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentDifficulty = this.dataset.diff;
+            });
+            btn.addEventListener('touchstart', function(e) {
+                // 被动
+            }, { passive: true });
+        });
+
+        // ============================================================
+        //  开始按钮
+        // ============================================================
+        startBtn.addEventListener('click', startGame);
+
+        // ============================================================
+        //  默认选中“简单”
+        // ============================================================
+        document.querySelector('.diff-btn[data-diff="easy"]')?.classList.add('active');
+        currentDifficulty = 'easy';
+
+        console.log('🎮 打小鸡裹lnchestn 已加载！');
+        console.log('📌 难度: ' + currentDifficulty);
     </script>
 </body>
 </html>
