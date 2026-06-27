@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>打小鸡裹lnchestn</title>
     <style>
-        /* ===== 全局重置 ===== */
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
@@ -19,8 +18,6 @@
             background: #f0f0f0;
             touch-action: none;
         }
-
-        /* ===== 游戏容器 ===== */
         #gameContainer {
             position: relative;
             width: 100vw;
@@ -29,8 +26,6 @@
             overflow: hidden;
             touch-action: none;
         }
-
-        /* ===== 顶部UI ===== */
         #ui {
             position: absolute;
             top: 16px;
@@ -54,6 +49,8 @@
             backdrop-filter: blur(4px);
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             pointer-events: auto;
+            cursor: pointer;
+            user-select: none;
         }
         #scoreDisplay {
             background: rgba(255, 71, 87, 0.85) !important;
@@ -61,8 +58,6 @@
         #timerDisplay {
             background: rgba(44, 62, 80, 0.85) !important;
         }
-
-        /* ===== 按钮蓝框彻底去除 ===== */
         button,
         #startBtn,
         .btn-restart,
@@ -87,8 +82,6 @@
             outline: none !important;
             -webkit-tap-highlight-color: transparent !important;
         }
-
-        /* ===== 开始按钮 ===== */
         #startBtn {
             position: absolute;
             top: 62%;
@@ -114,8 +107,6 @@
         #startBtn:active {
             transform: translate(-50%, -50%) scale(0.94);
         }
-
-        /* ===== 难度选择器 ===== */
         #difficultySelector {
             position: absolute;
             top: 28%;
@@ -190,8 +181,6 @@
         .diff-btn.active .sub {
             opacity: 0.9;
         }
-
-        /* ===== 游戏目标（小鸡） ===== */
         .game-item {
             position: absolute;
             width: 120px;
@@ -231,8 +220,6 @@
             50% { transform: scale(0.88); }
             100% { transform: scale(1); }
         }
-
-        /* ===== 弹窗 ===== */
         #customModal {
             position: fixed;
             top: 0;
@@ -305,9 +292,11 @@
             border: 1px solid #e9ecef;
             opacity: 0;
             transition: opacity 0.5s;
+            pointer-events: none;
         }
         .modal-content .share-text.show {
             opacity: 1;
+            pointer-events: auto;
         }
         .modal-actions {
             display: flex;
@@ -315,9 +304,11 @@
             margin-top: 4px;
             opacity: 0;
             transition: opacity 0.5s ease;
+            pointer-events: none;
         }
         .modal-actions.show {
             opacity: 1;
+            pointer-events: auto;
         }
         .modal-actions button {
             flex: 1;
@@ -349,8 +340,6 @@
         .btn-share:hover {
             background: #e03e4e;
         }
-
-        /* ===== Toast 提示条 ===== */
         #toastMsg {
             position: fixed;
             top: 30px;
@@ -374,102 +363,44 @@
             opacity: 1;
             pointer-events: auto;
         }
-
-        /* ===== 响应式微调 ===== */
         @media (max-width: 480px) {
-            #ui div {
-                font-size: 15px;
-                padding: 6px 14px;
-            }
-            #startBtn {
-                font-size: 20px;
-                padding: 14px 36px;
-                top: 64%;
-            }
-            .diff-btn {
-                font-size: 13px;
-                padding: 8px 4px;
-                min-width: 44px;
-            }
-            .game-item {
-                width: 100px;
-                height: 100px;
-            }
-            .modal-content {
-                padding: 22px 18px 20px;
-            }
-            .modal-content .final-score {
-                font-size: 36px;
-            }
-            #difficultySelector {
-                padding: 18px 16px 20px;
-                gap: 10px;
-                top: 26%;
-            }
+            #ui div { font-size: 15px; padding: 6px 14px; }
+            #startBtn { font-size: 20px; padding: 14px 36px; top: 64%; }
+            .diff-btn { font-size: 13px; padding: 8px 4px; min-width: 44px; }
+            .game-item { width: 100px; height: 100px; }
+            .modal-content { padding: 22px 18px 20px; }
+            .modal-content .final-score { font-size: 36px; }
+            #difficultySelector { padding: 18px 16px 20px; gap: 10px; top: 26%; }
         }
         @media (max-width: 380px) {
-            .game-item {
-                width: 80px;
-                height: 80px;
-            }
-            .diff-btn {
-                font-size: 11px;
-                padding: 6px 2px;
-                min-width: 36px;
-            }
-            #difficultySelector .label {
-                font-size: 13px;
-            }
-            #startBtn {
-                top: 66%;
-                font-size: 18px;
-                padding: 12px 28px;
-            }
+            .game-item { width: 80px; height: 80px; }
+            .diff-btn { font-size: 11px; padding: 6px 2px; min-width: 36px; }
+            #difficultySelector .label { font-size: 13px; }
+            #startBtn { top: 66%; font-size: 18px; padding: 12px 28px; }
         }
     </style>
 </head>
 <body>
-
-    <!-- ===== 游戏容器 ===== -->
     <div id="gameContainer">
-        <!-- 顶部信息 -->
         <div id="ui">
             <div id="scoreDisplay">🏆 0</div>
             <div id="timerDisplay">⏱ 30s</div>
         </div>
-
-        <!-- 难度选择器 -->
         <div id="difficultySelector">
             <div class="label">🎯 选择难度</div>
             <div class="diff-group">
-                <button class="diff-btn active" data-diff="easy">
-                    简单
-                    <span class="sub">5 目标</span>
-                </button>
-                <button class="diff-btn" data-diff="normal">
-                    普通
-                    <span class="sub">3 目标</span>
-                </button>
-                <button class="diff-btn" data-diff="hard">
-                    困难
-                    <span class="sub">1 目标</span>
-                </button>
-                <button class="diff-btn" data-diff="combo">
-                    连打
-                    <span class="sub">大目标·居中</span>
-                </button>
+                <button class="diff-btn active" data-diff="easy">简单<span class="sub">5 目标</span></button>
+                <button class="diff-btn" data-diff="normal">普通<span class="sub">3 目标</span></button>
+                <button class="diff-btn" data-diff="hard">困难<span class="sub">1 目标</span></button>
+                <button class="diff-btn" data-diff="combo">连打<span class="sub">大目标·居中</span></button>
             </div>
         </div>
-
-        <!-- 开始按钮 -->
         <button id="startBtn">▶ 开始游戏</button>
     </div>
 
-    <!-- ===== 成绩弹窗（新增模式显示） ===== -->
     <div id="customModal">
         <div class="modal-content">
             <h2>🎉 时间到！</h2>
-            <!-- 模式显示 -->
             <div id="modeDisplay">模式：简单</div>
             <img id="resultImg" src="1.jpg" alt="成绩图">
             <div class="final-score" id="resultScore">0 分</div>
@@ -481,20 +412,15 @@
         </div>
     </div>
 
-    <!-- ===== Toast 提示 ===== -->
     <div id="toastMsg"></div>
 
     <script>
-        // ============================================================
-        //  DOM 引用
-        // ============================================================
         const container = document.getElementById('gameContainer');
         const startBtn = document.getElementById('startBtn');
         const scoreDisplay = document.getElementById('scoreDisplay');
         const timerDisplay = document.getElementById('timerDisplay');
         const difficultySelector = document.getElementById('difficultySelector');
         const diffBtns = document.querySelectorAll('.diff-btn');
-
         const modal = document.getElementById('customModal');
         const resultScore = document.getElementById('resultScore');
         const shareTextPreview = document.getElementById('shareTextPreview');
@@ -502,11 +428,8 @@
         const restartBtn = document.getElementById('restartBtn');
         const shareBtn = document.getElementById('shareBtn');
         const toastMsg = document.getElementById('toastMsg');
-        const modeDisplay = document.getElementById('modeDisplay'); // 新增
+        const modeDisplay = document.getElementById('modeDisplay');
 
-        // ============================================================
-        //  状态变量
-        // ============================================================
         let score = 0;
         let timeLeft = 30;
         let timerInterval = null;
@@ -516,9 +439,12 @@
         let currentDifficulty = 'easy';
         let isGameRunning = false;
 
-        // ============================================================
-        //  环境检测（分享功能）
-        // ============================================================
+        let debugMode = false;
+        let clickSequence = [];
+        let lastClickTime = 0;
+        const SEQUENCE = ['score', 'timer', 'timer', 'score', 'timer', 'timer', 'score'];
+        let debugAnimFrameId = null;
+
         function isWebEnvironment() {
             if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return false;
             const ua = navigator.userAgent.toLowerCase();
@@ -530,16 +456,12 @@
         }
         const canShare = isWebEnvironment();
 
-        // ============================================================
-        //  音频
-        // ============================================================
         function initAudio() {
             if (audio) return;
             audio = new Audio('1.mp3');
             audio.loop = true;
             audio.volume = 0.4;
         }
-
         function wakeUpMusic() {
             if (audio && audio.paused && !audioStarted) {
                 audio.play().then(() => { audioStarted = true; }).catch(() => {});
@@ -551,9 +473,6 @@
             document.addEventListener('pointerdown', wakeUpMusic);
         };
 
-        // ============================================================
-        //  Toast
-        // ============================================================
         function showToast(text, isSuccess = true) {
             toastMsg.textContent = text;
             toastMsg.style.background = isSuccess ? 'rgba(46, 204, 113, 0.92)' : 'rgba(231, 76, 60, 0.92)';
@@ -564,9 +483,6 @@
             }, 2800);
         }
 
-        // ============================================================
-        //  工具函数
-        // ============================================================
         function getRandomPosition(size) {
             const w = container.clientWidth;
             const h = container.clientHeight;
@@ -579,7 +495,6 @@
             const startX = parseFloat(element.style.left) || 0;
             const startY = parseFloat(element.style.top) || 0;
             const startTime = performance.now();
-
             function animate(time) {
                 const elapsed = time - startTime;
                 const progress = Math.min(elapsed / duration, 1);
@@ -591,16 +506,12 @@
             requestAnimationFrame(animate);
         }
 
-        // ============================================================
-        //  创建目标（连打居中 + 大尺寸）
-        // ============================================================
         function createCat(isStatic = false, size = 120) {
             const div = document.createElement('div');
             div.className = 'game-item';
             if (isStatic) div.classList.add('big');
             div.style.backgroundImage = 'url(1.jpg)';
             div.setAttribute('draggable', 'false');
-
             let pos;
             if (isStatic) {
                 const x = (container.clientWidth - size) / 2;
@@ -609,35 +520,27 @@
             } else {
                 pos = getRandomPosition(size);
             }
-
             div.style.left = pos.x + 'px';
             div.style.top = pos.y + 'px';
             div.style.width = size + 'px';
             div.style.height = size + 'px';
-
             div.addEventListener('pointerdown', function(e) {
                 e.preventDefault();
                 this.classList.remove('pop');
                 void this.offsetWidth;
                 this.classList.add('pop');
-
                 score++;
                 scoreDisplay.textContent = '🏆 ' + score;
-
                 if (!isStatic) {
                     const newPos = getRandomPosition(size);
                     smoothMove(this, newPos.x, newPos.y);
                 }
             });
-
             container.appendChild(div);
             items.push(div);
             return div;
         }
 
-        // ============================================================
-        //  难度配置
-        // ============================================================
         function getDifficultyConfig(diff) {
             switch (diff) {
                 case 'easy':   return { count: 5, size: 120, static: false };
@@ -648,47 +551,98 @@
             }
         }
 
-        // 获取模式中文名
         function getModeName(diff) {
-            const map = {
-                'easy': '简单',
-                'normal': '普通',
-                'hard': '困难',
-                'combo': '连打'
-            };
+            const map = { 'easy': '简单', 'normal': '普通', 'hard': '困难', 'combo': '连打' };
             return map[diff] || diff;
         }
 
-        // ============================================================
-        //  游戏核心
-        // ============================================================
+        function handleDebugClick(element) {
+            const now = Date.now();
+            if (clickSequence.length > 0 && now - lastClickTime > 3000) {
+                clickSequence = [];
+            }
+            lastClickTime = now;
+            let type = null;
+            if (element === scoreDisplay) type = 'score';
+            else if (element === timerDisplay) type = 'timer';
+            else return;
+            clickSequence.push(type);
+            if (clickSequence.length === SEQUENCE.length) {
+                let match = true;
+                for (let i = 0; i < SEQUENCE.length; i++) {
+                    if (clickSequence[i] !== SEQUENCE[i]) { match = false; break; }
+                }
+                if (match) {
+                    debugMode = !debugMode;
+                    if (debugMode) {
+                        showToast('🛠️ Debug Mode 已开启！', true);
+                        if (isGameRunning) startDebugLoop();
+                    } else {
+                        showToast('🛠️ Debug Mode 已关闭', false);
+                        stopDebugLoop();
+                    }
+                    clickSequence = [];
+                } else {
+                    clickSequence = [];
+                }
+            }
+        }
+
+        function startDebugLoop() {
+            if (debugAnimFrameId) cancelAnimationFrame(debugAnimFrameId);
+            let frameCount = 0;
+            function loop() {
+                if (!debugMode || !isGameRunning) {
+                    debugAnimFrameId = null;
+                    return;
+                }
+                frameCount++;
+                if (frameCount % 3 === 0) {
+                    for (let item of items) {
+                        const event = new PointerEvent('pointerdown', {
+                            bubbles: true,
+                            cancelable: true,
+                            pointerType: 'touch',
+                        });
+                        item.dispatchEvent(event);
+                    }
+                }
+                debugAnimFrameId = requestAnimationFrame(loop);
+            }
+            debugAnimFrameId = requestAnimationFrame(loop);
+        }
+
+        function stopDebugLoop() {
+            if (debugAnimFrameId) {
+                cancelAnimationFrame(debugAnimFrameId);
+                debugAnimFrameId = null;
+            }
+        }
+
         function startGame() {
             if (isGameRunning) return;
             isGameRunning = true;
-
+            if (debugMode) {
+                startDebugLoop();
+            }
             difficultySelector.classList.add('hidden');
             startBtn.style.display = 'none';
-
             if (audio) {
                 if (audio.paused) { audio.play().catch(() => {}); }
                 audio.volume = 1.0;
                 audioStarted = true;
             }
-
             clearInterval(timerInterval);
             items.forEach(item => item.remove());
             items = [];
-
             score = 0;
             timeLeft = 30;
             scoreDisplay.textContent = '🏆 0';
             timerDisplay.textContent = '⏱ 30s';
-
             const config = getDifficultyConfig(currentDifficulty);
             for (let i = 0; i < config.count; i++) {
                 createCat(config.static, config.size);
             }
-
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerDisplay.textContent = '⏱ ' + timeLeft + 's';
@@ -701,30 +655,26 @@
 
         function endGame() {
             isGameRunning = false;
-
+            stopDebugLoop();
             items.forEach(item => item.remove());
             items = [];
-
             startBtn.style.display = 'block';
             startBtn.style.opacity = '0';
             startBtn.style.pointerEvents = 'none';
-
-            // 更新结算信息
             resultScore.textContent = score + ' 分';
-            const modeName = getModeName(currentDifficulty);
+            let modeName = getModeName(currentDifficulty);
+            if (debugMode) {
+                modeName += ' 🛠️ Debug Mode';
+            }
             modeDisplay.textContent = '🎯 模式：' + modeName;
-
-            const shareText = '我在打小鸡裹lnchestn中获得了' + score + '分（' + modeName + '模式），你也来试试吧！';
+            const shareText = '我在打小鸡裹lnchestn中获得了' + score + '分（' + modeName + '），你也来试试吧！';
             shareTextPreview.textContent = shareText;
-
             modalActions.classList.remove('show');
             shareTextPreview.classList.remove('show');
             modal.style.display = 'flex';
-
             setTimeout(() => {
                 shareTextPreview.classList.add('show');
                 modalActions.classList.add('show');
-
                 if (!canShare) {
                     shareBtn.style.display = 'none';
                     restartBtn.style.flex = '1';
@@ -735,26 +685,19 @@
                     shareBtn.style.flex = '1';
                 }
             }, 600);
-
             if (audio) { audio.volume = 0.4; }
         }
 
-        // ============================================================
-        //  弹窗按钮
-        // ============================================================
         restartBtn.addEventListener('click', function() {
             modal.style.display = 'none';
             if (audio) { audio.volume = 0.4; }
-
             startBtn.style.opacity = '1';
             startBtn.style.pointerEvents = 'auto';
             startBtn.style.display = 'block';
             difficultySelector.classList.remove('hidden');
-
             shareBtn.style.display = '';
             restartBtn.style.flex = '';
             restartBtn.style.width = '';
-
             isGameRunning = false;
         });
 
@@ -790,9 +733,15 @@
             document.body.removeChild(textArea);
         });
 
-        // ============================================================
-        //  难度选择交互
-        // ============================================================
+        scoreDisplay.addEventListener('pointerdown', function(e) {
+            e.stopPropagation();
+            handleDebugClick(this);
+        });
+        timerDisplay.addEventListener('pointerdown', function(e) {
+            e.stopPropagation();
+            handleDebugClick(this);
+        });
+
         diffBtns.forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -800,24 +749,17 @@
                 this.classList.add('active');
                 currentDifficulty = this.dataset.diff;
             });
-            btn.addEventListener('touchstart', function(e) {
-                // 被动
-            }, { passive: true });
+            btn.addEventListener('touchstart', function(e) { }, { passive: true });
         });
 
-        // ============================================================
-        //  开始按钮
-        // ============================================================
         startBtn.addEventListener('click', startGame);
 
-        // ============================================================
-        //  默认选中“简单”
-        // ============================================================
         document.querySelector('.diff-btn[data-diff="easy"]')?.classList.add('active');
         currentDifficulty = 'easy';
 
         console.log('🎮 打小鸡裹lnchestn 已加载！');
         console.log('📌 难度: ' + currentDifficulty);
+        console.log('🔧 隐藏 Debug');
     </script>
 </body>
 </html>
