@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#FF00FF 一键生成器</title>
+    <script src="https://unpkg.com/@jaames/iro@5.5.2/dist/iro.min.js">
+    </script>
+    <style>
+        /* ================= 终极去蓝框策略 ================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+        *:focus,
+        *:focus-visible,
+        *:active,
+        *::-moz-focus-inner {
+            outline: none !important;
+            box-shadow: none !important;
+            border: 0 none !important;
+        }
+
+        input,
+        button,
+        select,
+        textarea,
+        label {
+            outline: none !important;
+        }
+        input[type="range"]::-webkit-slider-thumb:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        input[type="range"]::-moz-range-thumb:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        :root {
+            --accent-color: #FF00FF;
+            --text-color: #FFFFFF;
+            --bg-color: #1a1a1a;
+            --accent-dim: rgba(255, 0, 255, 0.3);
+            --accent-glow: rgba(255, 0, 255, 0.6);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #111;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            background: var(--bg-color);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid var(--accent-dim);
+            box-shadow: 0 0 60px var(--accent-dim);
+            max-width: 950px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            color: var(--text-color);
+            font-size: 30px;
+            font-weight: 800;
+            text-shadow: 0 0 20px var(--accent-glow);
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        .controls {
+            background: rgba(40, 40, 40, 0.4);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+        .btn-upload {
+            background: #222;
+            color: #ddd;
+            border: 2px dashed #444;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-upload:hover {
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .btn-download {
+            background: var(--accent-color);
+            color: var(--text-color);
+            border: none;
+            padding: 12px 28px;
+            font-size: 17px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 15px var(--accent-dim);
+            flex: 1;
+            min-width: 140px;
+        }
+        .btn-download:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+        .btn-download:disabled {
+            background: #555;
+            box-shadow: none;
+            color: #aaa;
+        }
+
+        .custom-select-wrap {
+            position: relative;
+            display: inline-block;
+            min-width: 120px;
+        }
+        .custom-select-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #222;
+            padding: 8px 12px 8px 16px;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .custom-select-trigger:hover {
+            border-color: var(--accent-color);
+        }
+        .custom-select-trigger svg {
+            width: 14px;
+            height: 14px;
+            fill: #aaa;
+            transition: 0.3s;
+        }
+        .custom-select-trigger.active svg {
+            transform: rotate(180deg);
+        }
+
+        .custom-select-options {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: #1f1f1f;
+            border: 1px solid #333;
+            border-radius: 8px;
+            z-index: 20;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+        .custom-select-options.active {
+            display: block;
+        }
+
+        .custom-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #ddd;
+            font-size: 14px;
+        }
+        .custom-option:hover {
+            background: var(--accent-dim);
+            color: #ffffff;
+        }
+        .custom-option:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+        .custom-option:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+        #formatSelect {
+            display: none;
+        }
+
+        .color-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+        .color-group {
+            background: #222;
+            padding: 15px;
+            border-radius: 12px;
+            flex: 1;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+        .color-group label {
+            font-size: 14px;
+            color: #ccc;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+        }
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .color-preview {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            flex-shrink: 0;
+        }
+
+        .input-wrap {
+            position: relative;
+            flex: 1;
+        }
+        .input-wrap input[type="text"] {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #111;
+            color: #fff;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .input-wrap input[type="text"]:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-picker {
+            background: var(--accent-dim);
+            color: #ffffff;
+            border: 1px solid var(--accent-dim);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-picker:hover {
+            background: var(--accent-color);
+            color: #ffffff;
+        }
+
+        .threshold-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+        .threshold-row label {
+            font-size: 13px;
+            color: #aaa;
+            white-space: nowrap;
+        }
+        .threshold-row input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 5px;
+            background: #333;
+            border-radius: 3px;
+        }
+        .threshold-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .threshold-row span {
+            min-width: 30px;
+            color: #fff;
+            font-size: 14px;
+            text-align: right;
+        }
+        .btn-auto {
+            background: #333;
+            border: 1px solid #444;
+            color: #ddd;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-auto:hover {
+            border-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        .display-area {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .img-box {
+            flex: 1;
+            min-width: 280px;
+            background: #0d0d0d;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+        .img-box p {
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #aaa;
+            width: 100%;
+            text-align: center;
+        }
+
+        .img-box img,
+        .img-box canvas {
+            max-width: 100%;
+            max-height: 400px;
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 6px;
+            display: block;
+        }
+
+        #canvasResult {
+            opacity: 0;
+            transform: scale(0.95);
+            filter: blur(6px);
+            transition: none;
+        }
+        #canvasResult.animated {
+            animation: fadeIn 0.5s forwards;
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+                filter: blur(6px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0px);
+            }
+        }
+
+        #popupOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        #popupBox {
+            background: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 40px var(--accent-dim);
+            width: 310px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        #popupBox h3 {
+            color: #ffffff;
+            font-weight: normal;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+        }
+        #popupBox .popup-input-row input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #0c0c0c;
+            color: #ffffff;
+            font-family: monospace;
+            text-align: center;
+            font-size: 14px;
+        }
+        #popupBox .popup-input-row input[type="text"]:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-dim);
+        }
+
+        .iro__box {
+            border: 1px solid #444 !important;
+        }
+        .iro__slider {
+            width: 180px !important;
+            height: 12px !important;
+            border-radius: 6px !important;
+        }
+        .iro__handler {
+            box-shadow: 0 0 10px var(--accent-dim) !important;
+            border-color: #fff !important;
+        }
+
+        .popup-input-row {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 5px;
+        }
+        .popup-input-row .input-wrap {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="titleElem">#FF00FF 一键生成器</h1>
+        </div>
+
+        <div class="controls">
+            <div class="control-row">
+                <label class="btn-upload" for="fileInput">📁 选择图片</label>
+                <input type="file" id="fileInput" accept="image/*">
+                <button class="btn-download" id="downloadBtn" disabled>⬇️ 下载图片</button>
+
+                <select id="formatSelect">
+                    <option value="original">原格式</option>
+                    <option value="png">PNG</option>
+                    <option value="jpeg">JPG</option>
+                    <option value="webp">WebP</option>
+                    <option value="svg">SVG (矢量)</option>
+                </select>
+
+                <div class="custom-select-wrap" id="customSelectWrap">
+                    <div class="custom-select-trigger" id="selectTrigger">
+                        <span id="selectDisplayText">原格式</span>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7 10l5 5 5-5z" />
+                        </svg>
+                    </div>
+                    <div class="custom-select-options" id="selectOptions"></div>
+                </div>
+            </div>
+
+            <div class="color-wrapper">
+                <div class="color-group">
+                    <label>颜色一 (亮部)</label>
+                    <div class="color-row">
+                        <div class="color-preview" id="preview1" style="background:#FF00FF;"></div>
+                        <div class="input-wrap">
+                            <input type="text" id="hex1" value="#FF00FF" maxlength="7">
+                        </div>
+                        <button class="btn-picker" onclick="openPicker(1)">取色</button>
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label>颜色二 (暗部)</label>
+                    <div class="color-row">
+                        <div class="color-preview" id="preview2" style="background:#000000;"></div>
+                        <div class="input-wrap">
+                            <input type="text" id="hex2" value="#000000" maxlength="7">
+                        </div>
+                        <button class="btn-picker" onclick="openPicker(2)">取色</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="threshold-row">
+                <label>阈值</label>
+                <input type="range" id="threshold" min="0" max="255" value="127">
+                <span id="thresholdVal">127</span>
+                <button class="btn-auto" id="autoThresholdBtn">自动匹配</button>
+            </div>
+        </div>
+
+        <div class="display-area">
+            <div class="img-box">
+                <p>📷 原始照片</p>
+                <img id="originalImg" style="display:none;">
+                <div id="placeholder" style="min-height:180px; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px;">等待上传...</div>
+            </div>
+            <div class="img-box">
+                <p>🎨 生成效果</p>
+                <canvas id="canvasResult" style="background:#0c0c0c;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 取色器弹窗 -->
+    <div id="popupOverlay" onclick="closePicker()">
+        <div id="popupBox" onclick="event.stopPropagation()">
+            <h3 id="pickerTargetLabel">选择颜色一</h3>
+            <div id="pickerContainer"></div>
+            <div class="popup-input-row">
+                <div class="input-wrap">
+                    <input type="text" id="popupHex" maxlength="7" value="#FF00FF">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素
+        var fileInput = document.getElementById('fileInput');
+        var downloadBtn = document.getElementById('downloadBtn');
+        var originalImg = document.getElementById('originalImg');
+        var canvas = document.getElementById('canvasResult');
+        var ctx = canvas.getContext('2d');
+        var placeholder = document.getElementById('placeholder');
+        var hex1 = document.getElementById('hex1');
+        var hex2 = document.getElementById('hex2');
+        var preview1 = document.getElementById('preview1');
+        var preview2 = document.getElementById('preview2');
+        var thresholdSlider = document.getElementById('threshold');
+        var thresholdVal = document.getElementById('thresholdVal');
+        var autoThresholdBtn = document.getElementById('autoThresholdBtn');
+        var popupOverlay = document.getElementById('popupOverlay');
+        var popupHex = document.getElementById('popupHex');
+        var pickerTargetLabel = document.getElementById('pickerTargetLabel');
+        var titleElem = document.getElementById('titleElem');
+
+        var formatSelect = document.getElementById('formatSelect');
+        var selectTrigger = document.getElementById('selectTrigger');
+        var selectOptions = document.getElementById('selectOptions');
+        var selectDisplayText = document.getElementById('selectDisplayText');
+
+        var originalLoaded = false;
+        var pendingRender = false;
+        var colorTarget = 1; // 当前取色器目标：1=颜色一，2=颜色二
+        var uploadedFileType = 'image/png';
+        var uploadedFileExt = 'png';
+
+        // ========== 下拉菜单（无改动） ==========
+        (function initCustomSelect() {
+            var options = formatSelect.options;
+            for (var i = 0; i < options.length; i++) {
+                var opt = options[i];
+                var div = document.createElement('div');
+                div.className = 'custom-option';
+                div.innerText = opt.text;
+                div.dataset.value = opt.value;
+                div.dataset.index = i;
+                selectOptions.appendChild(div);
+            }
+            selectTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var isOpen = selectOptions.classList.contains('active');
+                closeAllSelects();
+                if (!isOpen) {
+                    selectOptions.classList.add('active');
+                    selectTrigger.classList.add('active');
+                }
+            });
+            selectOptions.addEventListener('click', function(e) {
+                var target = e.target;
+                if (target.classList.contains('custom-option')) {
+                    var val = target.dataset.value;
+                    var text = target.innerText;
+                    formatSelect.value = val;
+                    selectDisplayText.innerText = text;
+                    selectOptions.classList.remove('active');
+                    selectTrigger.classList.remove('active');
+                    var evt = document.createEvent('HTMLEvents');
+                    evt.initEvent('change', true, false);
+                    formatSelect.dispatchEvent(evt);
+                }
+            });
+            document.addEventListener('click', function(e) {
+                if (!document.getElementById('customSelectWrap').contains(e.target)) {
+                    selectOptions.classList.remove('active');
+                    selectTrigger.classList.remove('active');
+                }
+            });
+            var defaultText = formatSelect.options[formatSelect.selectedIndex].text;
+            selectDisplayText.innerText = defaultText;
+        })();
+
+        function closeAllSelects() {
+            selectOptions.classList.remove('active');
+            selectTrigger.classList.remove('active');
+        }
+
+        // ========== 工具函数 ==========
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 255,
+                g: 0, b: 255 };
+        }
+
+        function getContrastColor(hex) {
+            var rgb = hexToRgb(hex);
+            var brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+            return brightness > 150 ? '#111111' : '#FFFFFF';
+        }
+
+        // 更新全局主题色（CSS变量）和标题
+        function updateTheme(hex) {
+            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+            var root = document.documentElement;
+            var dim = hex + '4D';
+            var glow = hex + '99';
+            var textColor = getContrastColor(hex);
+            root.style.setProperty('--accent-color', hex);
+            root.style.setProperty('--text-color', textColor);
+            root.style.setProperty('--accent-dim', dim);
+            root.style.setProperty('--accent-glow', glow);
+            titleElem.textContent = hex + ' 一键生成器';
+        }
+
+        // ========== 统一的颜色更新函数 ==========
+        // 更新颜色一（亮部）: 同步输入框、预览、主题、取色器
+        function updateColorOne(hex) {
+            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+            hex1.value = hex;
+            preview1.style.backgroundColor = hex;
+            updateTheme(hex);
+            // 同步取色器（如果取色器存在且颜色目标为1，避免冲突）
+            if (picker && colorTarget === 1) {
+                picker.color.set(hex);
+            }
+            if (originalLoaded) triggerRender(false);
+        }
+
+        // 更新颜色二（暗部）: 同步输入框、预览、取色器
+        function updateColorTwo(hex) {
+            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+            hex2.value = hex;
+            preview2.style.backgroundColor = hex;
+            if (picker && colorTarget === 2) {
+                picker.color.set(hex);
+            }
+            if (originalLoaded) triggerRender(false);
+        }
+
+        // 格式化并验证颜色字符串，返回规范的大写形式或 null
+        function validateHex(input) {
+            var val = input.trim().toUpperCase();
+            if (val === '') return null;
+            // 去掉可能的 # 前缀
+            if (val.charAt(0) === '#') val = val.substring(1);
+            if (/^[0-9A-F]{6}$/.test(val)) {
+                return '#' + val;
+            }
+            return null;
+        }
+
+        // ========== 输入框事件绑定 ==========
+        function setupInput(input, isColorOne) {
+            // 输入时实时过滤并尝试更新
+            input.addEventListener('input', function() {
+                var raw = this.value;
+                // 过滤非法字符
+                raw = raw.replace(/[^0-9a-fA-F#]/g, '');
+                if (raw.length > 7) raw = raw.substring(0, 7);
+                this.value = raw;
+
+                var hex = validateHex(raw);
+                if (hex) {
+                    if (isColorOne) {
+                        updateColorOne(hex);
+                    } else {
+                        updateColorTwo(hex);
+                    }
+                    // 同步弹窗输入框（如果当前弹窗打开且目标匹配）
+                    if (popupOverlay.style.display === 'flex') {
+                        if ((isColorOne && colorTarget === 1) || (!isColorOne && colorTarget === 2)) {
+                            popupHex.value = hex;
+                        }
+                    }
+                }
+            });
+
+            // 失焦或回车时强制校正
+            input.addEventListener('blur', function() {
+                var raw = this.value.trim();
+                var hex = validateHex(raw);
+                if (!hex) {
+                    // 无效则回退默认
+                    hex = isColorOne ? '#FF00FF' : '#000000';
+                    this.value = hex;
+                    if (isColorOne) {
+                        updateColorOne(hex);
+                    } else {
+                        updateColorTwo(hex);
+                    }
+                } else {
+                    this.value = hex;
+                    if (isColorOne) {
+                        updateColorOne(hex);
+                    } else {
+                        updateColorTwo(hex);
+                    }
+                }
+            });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') this.blur();
+            });
+        }
+
+        // 初始化主页两个输入框
+        setupInput(hex1, true);
+        setupInput(hex2, false);
+
+        // ========== 取色器弹窗输入框 ==========
+        // 弹窗输入框同样绑定，但更新时需根据 colorTarget 调用对应更新函数
+        popupHex.addEventListener('input', function() {
+            var raw = this.value;
+            raw = raw.replace(/[^0-9a-fA-F#]/g, '');
+            if (raw.length > 7) raw = raw.substring(0, 7);
+            this.value = raw;
+            var hex = validateHex(raw);
+            if (hex) {
+                if (colorTarget === 1) {
+                    updateColorOne(hex);
+                } else {
+                    updateColorTwo(hex);
+                }
+            }
+        });
+        popupHex.addEventListener('blur', function() {
+            var raw = this.value.trim();
+            var hex = validateHex(raw);
+            if (!hex) {
+                hex = (colorTarget === 1) ? '#FF00FF' : '#000000';
+                this.value = hex;
+            }
+            if (colorTarget === 1) {
+                updateColorOne(hex);
+            } else {
+                updateColorTwo(hex);
+            }
+        });
+        popupHex.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') this.blur();
+        });
+
+        // ========== 取色器 (iro) ==========
+        var picker = new iro.ColorPicker("#pickerContainer", {
+            width: 180,
+            color: "#FF00FF",
+            layout: [
+                { component: iro.ui.Box, options: { boxHeight: 110 } },
+                { component: iro.ui.Slider, options: { sliderType: 'hue', width: 180 } }
+            ]
+        });
+
+        picker.on('color:change', function(color) {
+            var hex = color.hexString;
+            popupHex.value = hex;
+            if (colorTarget === 1) {
+                updateColorOne(hex);
+            } else {
+                updateColorTwo(hex);
+            }
+        });
+
+        // ========== 打开/关闭取色器弹窗 ==========
+        function openPicker(target) {
+            colorTarget = target;
+            var currentHex = (target === 1) ? hex1.value : hex2.value;
+            picker.color.set(currentHex);
+            popupHex.value = currentHex;
+            pickerTargetLabel.innerText = (target === 1) ? '选择颜色一 (亮部)' : '选择颜色二 (暗部)';
+            popupOverlay.style.display = 'flex';
+        }
+
+        function closePicker() {
+            // 触发弹窗输入框失焦，确保颜色被确认
+            popupHex.blur();
+            popupOverlay.style.display = 'none';
+            // 同时让主页输入框失焦以显示最新值
+            if (colorTarget === 1) hex1.blur();
+            else hex2.blur();
+        }
+
+        // 点击遮罩关闭
+        popupOverlay.addEventListener('click', function(e) {
+            if (e.target === popupOverlay) {
+                closePicker();
+            }
+        });
+
+        // ========== 阈值滑块 ==========
+        thresholdSlider.addEventListener('input', function() {
+            thresholdVal.textContent = this.value;
+            if (originalLoaded) triggerRender(false);
+        });
+
+        // ========== 自动阈值 ==========
+        function calcOtsu(data, w, h) {
+            var hist = new Array(256).fill(0);
+            var total = w * h;
+            for (var i = 0; i < data.length; i += 4) {
+                var gray = Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+                hist[gray]++;
+            }
+            var sum = 0;
+            for (var t = 0; t < 256; t++) sum += t * hist[t];
+            var sumB = 0,
+                wB = 0,
+                wF = 0,
+                maxVar = 0,
+                bestT = 0;
+            for (var t = 0; t < 256; t++) {
+                wB += hist[t];
+                if (wB === 0) continue;
+                wF = total - wB;
+                if (wF === 0) break;
+                sumB += t * hist[t];
+                var mB = sumB / wB;
+                var mF = (sum - sumB) / wF;
+                var varB = wB * wF * (mB - mF) * (mB - mF);
+                if (varB > maxVar) { maxVar = varB;
+                    bestT = t; }
+            }
+            return bestT;
+        }
+
+        autoThresholdBtn.addEventListener('click', function() {
+            if (!originalLoaded) return;
+            ctx.drawImage(originalImg, 0, 0);
+            var tmpData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            var t = calcOtsu(tmpData, canvas.width, canvas.height);
+            thresholdSlider.value = t;
+            thresholdVal.textContent = t;
+            triggerRender(true);
+        });
+
+        // ========== 图片上传 ==========
+        fileInput.addEventListener('change', function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            uploadedFileType = file.type || 'image/png';
+            var originalName = file.name || 'image.png';
+            uploadedFileExt = originalName.split('.').pop() || 'png';
+            if (uploadedFileExt === 'jpg') uploadedFileExt = 'jpeg';
+
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                originalImg.onload = function() {
+                    originalLoaded = true;
+                    placeholder.style.display = 'none';
+                    originalImg.style.display = 'block';
+                    var w = originalImg.naturalWidth || originalImg.width;
+                    var h = originalImg.naturalHeight || originalImg.height;
+                    if (w === 0 || h === 0) {
+                        w = originalImg.clientWidth || 1;
+                        h = originalImg.clientHeight || 1;
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    downloadBtn.disabled = false;
+                    triggerRender(false);
+                };
+                originalImg.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ========== 图像处理 ==========
+        function triggerRender(animate) {
+            if (pendingRender) return;
+            pendingRender = true;
+            requestAnimationFrame(function() {
+                pendingRender = false;
+                processImage(animate);
+            });
+        }
+
+        function processImage(animate) {
+            ctx.drawImage(originalImg, 0, 0);
+            var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var data = imgData.data;
+            var c1 = hexToRgb(hex1.value);
+            var c2 = hexToRgb(hex2.value);
+            var th = parseInt(thresholdSlider.value);
+
+            for (var i = 0; i < data.length; i += 4) {
+                var gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                if (gray >= th) {
+                    data[i] = c1.r;
+                    data[i + 1] = c1.g;
+                    data[i + 2] = c1.b;
+                } else {
+                    data[i] = c2.r;
+                    data[i + 1] = c2.g;
+                    data[i + 2] = c2.b;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            canvas.classList.remove('animated');
+            if (animate) {
+                void canvas.offsetWidth;
+                canvas.classList.add('animated');
+            } else {
+                canvas.style.opacity = 1;
+                canvas.style.transform = 'scale(1)';
+                canvas.style.filter = 'blur(0px)';
+            }
+        }
+
+        // ========== 下载 ==========
+        function formatDate() {
+            var now = new Date();
+            var y = now.getFullYear();
+            var m = String(now.getMonth() + 1);
+            if (m.length === 1) m = '0' + m;
+            var d = String(now.getDate());
+            if (d.length === 1) d = '0' + d;
+            var h = String(now.getHours());
+            if (h.length === 1) h = '0' + h;
+            var min = String(now.getMinutes());
+            if (min.length === 1) min = '0' + min;
+            var s = String(now.getSeconds());
+            if (s.length === 1) s = '0' + s;
+            return y + '_' + m + '_' + d + '_' + h + '_' + min + '_' + s;
+        }
+
+        downloadBtn.addEventListener('click', function() {
+            if (!originalLoaded) return;
+            downloadBtn.textContent = '⏳ 保存中...';
+            downloadBtn.disabled = true;
+
+            setTimeout(function() {
+                processImage(true);
+                var fmt = formatSelect.value;
+                var w = canvas.width;
+                var h = canvas.height;
+
+                function resetBtn() {
+                    downloadBtn.textContent = '⬇️ 下载图片';
+                    downloadBtn.disabled = false;
+                }
+
+                if (fmt === 'svg') {
+                    try {
+                        var pngDataUrl = canvas.toDataURL('image/png');
+                        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h +
+                            '" viewBox="0 0 ' + w + ' ' + h +
+                            '"><image href="' + pngDataUrl + '" width="' + w + '" height="' + h + '" /></svg>';
+                        var blob = new Blob([svg], { type: 'image/svg+xml' });
+                        var link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = formatDate() + '.svg';
+                        link.click();
+                        resetBtn();
+                        return;
+                    } catch (e) {
+                        fallbackDownload();
+                        return;
+                    }
+                }
+
+                var mime, ext;
+                if (fmt === 'original') {
+                    mime = uploadedFileType;
+                    ext = uploadedFileExt;
+                    if (mime === 'image/jpeg') ext = 'jpg';
+                    if (mime === 'image/svg+xml') ext = 'svg';
+                } else {
+                    mime = 'image/' + fmt;
+                    ext = fmt;
+                }
+                var quality = (mime === 'image/jpeg' || mime === 'image/webp') ? 0.92 : undefined;
+                var fileName = formatDate() + '.' + ext;
+
+                function fallbackDownload() {
+                    var link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = formatDate() + '.png';
+                    link.click();
+                    resetBtn();
+                }
+
+                try {
+                    var blobFunc = canvas.toBlob || canvas.msToBlob;
+                    if (typeof blobFunc === 'function') {
+                        blobFunc.call(canvas, function(blob) {
+                            if (!blob || blob.size === 0) {
+                                fallbackDownload();
+                                return;
+                            }
+                            var link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = fileName;
+                            link.click();
+                            resetBtn();
+                        }, mime, quality);
+                    } else {
+                        fallbackDownload();
+                    }
+                } catch (e) {
+                    fallbackDownload();
+                }
+            }, 500);
+        });
+
+        // ========== 初始化 ==========
+        // 以颜色一初始值更新全部
+        updateColorOne('#FF00FF');
+        updateColorTwo('#000000');
+    </script>
+</body>
+</html>
