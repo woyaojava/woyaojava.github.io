@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>打小鸡裹lnchestn</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #f0f0f0;
+            touch-action: none;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
+            overflow: hidden;
+            touch-action: none;
+        }
+        #ui {
+            position: absolute;
+            top: 16px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-sizing: border-box;
+            z-index: 100;
+            pointer-events: none;
+        }
+        #ui div {
+            background: rgba(0, 0, 0, 0.72);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            pointer-events: auto;
+            cursor: pointer;
+            user-select: none;
+        }
+        #scoreDisplay {
+            background: rgba(255, 71, 87, 0.85) !important;
+        }
+        #timerDisplay {
+            background: rgba(44, 62, 80, 0.85) !important;
+        }
+        button,
+        #startBtn,
+        .btn-restart,
+        .btn-share,
+        .diff-btn {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            box-shadow: none !important;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        button:focus,
+        button:active,
+        #startBtn:focus,
+        #startBtn:active,
+        .btn-restart:focus,
+        .btn-restart:active,
+        .btn-share:focus,
+        .btn-share:active,
+        .diff-btn:focus,
+        .diff-btn:active {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+        #startBtn {
+            position: absolute;
+            top: 62%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 16px 48px;
+            font-size: 26px;
+            font-weight: 800;
+            background: #ff4757;
+            color: #fff;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 8px 30px rgba(255, 71, 87, 0.45);
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+            letter-spacing: 1px;
+        }
+        #startBtn:hover {
+            transform: translate(-50%, -50%) scale(1.06);
+            box-shadow: 0 12px 40px rgba(255, 71, 87, 0.55);
+        }
+        #startBtn:active {
+            transform: translate(-50%, -50%) scale(0.94);
+        }
+        #difficultySelector {
+            position: absolute;
+            top: 28%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 22px 24px 26px;
+            border-radius: 28px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
+            width: 88%;
+            max-width: 400px;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: auto;
+        }
+        #difficultySelector.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.92);
+        }
+        #difficultySelector .label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3436;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .diff-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        .diff-btn {
+            flex: 1;
+            min-width: 56px;
+            padding: 10px 6px;
+            border: 2px solid #dfe6e9;
+            border-radius: 40px;
+            background: #f8f9fa;
+            font-size: 15px;
+            font-weight: 700;
+            color: #2d3436;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 0.3px;
+            touch-action: manipulation;
+        }
+        .diff-btn:active {
+            transform: scale(0.94);
+        }
+        .diff-btn.active {
+            border-color: #ff4757;
+            background: #ff4757;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(255, 71, 87, 0.35);
+        }
+        .diff-btn .sub {
+            display: block;
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+        .diff-btn.active .sub {
+            opacity: 0.9;
+        }
+        .game-item {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            user-drag: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: box-shadow 0.15s;
+            will-change: transform, left, top;
+        }
+        .game-item:active {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .game-item.big {
+            border-radius: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+        }
+        .game-item.big:active {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        .game-item.pop {
+            animation: popAnim 0.18s ease;
+        }
+        @keyframes popAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.88); }
+            100% { transform: scale(1); }
+        }
+        #customModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(6px);
+        }
+        .modal-content {
+            background: #ffffff;
+            width: 88%;
+            max-width: 380px;
+            border-radius: 28px;
+            padding: 28px 24px 24px;
+            box-sizing: border-box;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.78) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal-content h2 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            color: #2d3436;
+        }
+        .modal-content #modeDisplay {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 8px;
+            background: #f1f3f5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .modal-content #resultImg {
+            width: 100%;
+            max-width: 180px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            margin-bottom: 12px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .modal-content .final-score {
+            font-size: 44px;
+            font-weight: 800;
+            color: #ff4757;
+            margin: 6px 0 12px;
+        }
+        .modal-content .share-text {
+            background: #f1f3f5;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #555;
+            text-align: left;
+            margin-bottom: 16px;
+            word-break: break-all;
+            line-height: 1.6;
+            border: 1px solid #e9ecef;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+        .modal-content .share-text.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        .modal-actions.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 13px 8px;
+            border: none;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .modal-actions button:active {
+            transform: scale(0.94);
+        }
+        .btn-restart {
+            background: #f1f3f5;
+            color: #2d3436;
+        }
+        .btn-restart:hover {
+            background: #e9ecef;
+        }
+        .btn-share {
+            background: #ff4757;
+            color: #fff;
+        }
+        .btn-share:hover {
+            background: #e03e4e;
+        }
+        #toastMsg {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            white-space: nowrap;
+            backdrop-filter: blur(4px);
+        }
+        #toastMsg.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        @media (max-width: 480px) {
+            #ui div { font-size: 15px; padding: 6px 14px; }
+            #startBtn { font-size: 20px; padding: 14px 36px; top: 64%; }
+            .diff-btn { font-size: 13px; padding: 8px 4px; min-width: 44px; }
+            .game-item { width: 100px; height: 100px; }
+            .modal-content { padding: 22px 18px 20px; }
+            .modal-content .final-score { font-size: 36px; }
+            #difficultySelector { padding: 18px 16px 20px; gap: 10px; top: 26%; }
+        }
+        @media (max-width: 380px) {
+            .game-item { width: 80px; height: 80px; }
+            .diff-btn { font-size: 11px; padding: 6px 2px; min-width: 36px; }
+            #difficultySelector .label { font-size: 13px; }
+            #startBtn { top: 66%; font-size: 18px; padding: 12px 28px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="ui">
+            <div id="scoreDisplay">🏆 0</div>
+            <div id="timerDisplay">⏱ 30s</div>
+        </div>
+        <div id="difficultySelector">
+            <div class="label">🎯 选择难度</div>
+            <div class="diff-group">
+                <button class="diff-btn active" data-diff="easy">简单<span class="sub">5 目标</span></button>
+                <button class="diff-btn" data-diff="normal">普通<span class="sub">3 目标</span></button>
+                <button class="diff-btn" data-diff="hard">困难<span class="sub">1 目标</span></button>
+                <button class="diff-btn" data-diff="combo">连打<span class="sub">大目标·居中</span></button>
+            </div>
+        </div>
+        <button id="startBtn">▶ 开始游戏</button>
+    </div>
+
+    <div id="customModal">
+        <div class="modal-content">
+            <h2>🎉 时间到！</h2>
+            <div id="modeDisplay">模式：简单</div>
+            <img id="resultImg" src="1.jpg" alt="成绩图">
+            <div class="final-score" id="resultScore">0 分</div>
+            <div class="share-text" id="shareTextPreview">我在打小鸡裹lnchestn中获得了0分，你也来试试吧！</div>
+            <div class="modal-actions" id="modalActions">
+                <button class="btn-restart" id="restartBtn">🔄 再来一局</button>
+                <button class="btn-share" id="shareBtn">📋 复制分享</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastMsg"></div>
+
+    <script>
+        const container = document.getElementById('gameContainer');
+        const startBtn = document.getElementById('startBtn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const difficultySelector = document.getElementById('difficultySelector');
+        const diffBtns = document.querySelectorAll('.diff-btn');
+        const modal = document.getElementById('customModal');
+        const resultScore = document.getElementById('resultScore');
+        const shareTextPreview = document.getElementById('shareTextPreview');
+        const modalActions = document.getElementById('modalActions');
+        const restartBtn = document.getElementById('restartBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const toastMsg = document.getElementById('toastMsg');
+        const modeDisplay = document.getElementById('modeDisplay');
+
+        let score = 0;
+        let timeLeft = 30;
+        let timerInterval = null;
+        let items = [];
+        let audio = null;
+        let audioStarted = false;
+        let currentDifficulty = 'easy';
+        let isGameRunning = false;
+
+        let debugMode = false;
+        let clickSequence = [];
+        let lastClickTime = 0;
+        const SEQUENCE = ['score', 'timer', 'timer', 'score', 'timer', 'timer', 'score'];
+        let debugAnimFrameId = null;
+
+        function isWebEnvironment() {
+            if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return false;
+            const ua = navigator.userAgent.toLowerCase();
+            const webviewKeywords = ['micromessenger', 'qq', 'weibo', 'dingtalk', 'ucbrowser', 'quark'];
+            for (let key of webviewKeywords) {
+                if (ua.includes(key)) return false;
+            }
+            return true;
+        }
+        const canShare = isWebEnvironment();
+
+        function initAudio() {
+            if (audio) return;
+            audio = new Audio('1.mp3');
+            audio.loop = true;
+            audio.volume = 0.4;
+        }
+        function wakeUpMusic() {
+            if (audio && audio.paused && !audioStarted) {
+                audio.play().then(() => { audioStarted = true; }).catch(() => {});
+                document.removeEventListener('pointerdown', wakeUpMusic);
+            }
+        }
+        window.onload = function() {
+            initAudio();
+            document.addEventListener('pointerdown', wakeUpMusic);
+        };
+
+        function showToast(text, isSuccess = true) {
+            toastMsg.textContent = text;
+            toastMsg.style.background = isSuccess ? 'rgba(46, 204, 113, 0.92)' : 'rgba(231, 76, 60, 0.92)';
+            toastMsg.classList.add('show');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toastMsg.classList.remove('show');
+            }, 2800);
+        }
+
+        function getRandomPosition(size) {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            const x = Math.random() * (w - size);
+            const y = Math.random() * (h - size);
+            return { x, y };
+        }
+
+        function smoothMove(element, targetX, targetY, duration = 380) {
+            const startX = parseFloat(element.style.left) || 0;
+            const startY = parseFloat(element.style.top) || 0;
+            const startTime = performance.now();
+            function animate(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                element.style.left = (startX + (targetX - startX) * ease) + 'px';
+                element.style.top = (startY + (targetY - startY) * ease) + 'px';
+                if (progress < 1) requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function createCat(isStatic = false, size = 120) {
+            const div = document.createElement('div');
+            div.className = 'game-item';
+            if (isStatic) div.classList.add('big');
+            div.style.backgroundImage = 'url(1.jpg)';
+            div.setAttribute('draggable', 'false');
+            let pos;
+            if (isStatic) {
+                const x = (container.clientWidth - size) / 2;
+                const y = (container.clientHeight - size) / 2;
+                pos = { x, y };
+            } else {
+                pos = getRandomPosition(size);
+            }
+            div.style.left = pos.x + 'px';
+            div.style.top = pos.y + 'px';
+            div.style.width = size + 'px';
+            div.style.height = size + 'px';
+            div.addEventListener('pointerdown', function(e) {
+                e.preventDefault();
+                this.classList.remove('pop');
+                void this.offsetWidth;
+                this.classList.add('pop');
+                score++;
+                scoreDisplay.textContent = '🏆 ' + score;
+                if (!isStatic) {
+                    const newPos = getRandomPosition(size);
+                    smoothMove(this, newPos.x, newPos.y);
+                }
+            });
+            container.appendChild(div);
+            items.push(div);
+            return div;
+        }
+
+        function getDifficultyConfig(diff) {
+            switch (diff) {
+                case 'easy':   return { count: 5, size: 120, static: false };
+                case 'normal': return { count: 3, size: 120, static: false };
+                case 'hard':   return { count: 1, size: 120, static: false };
+                case 'combo':  return { count: 1, size: 240, static: true };
+                default:       return { count: 5, size: 120, static: false };
+            }
+        }
+
+        function getModeName(diff) {
+            const map = { 'easy': '简单', 'normal': '普通', 'hard': '困难', 'combo': '连打' };
+            return map[diff] || diff;
+        }
+
+        function handleDebugClick(element) {
+            const now = Date.now();
+            if (clickSequence.length > 0 && now - lastClickTime > 3000) {
+                clickSequence = [];
+            }
+            lastClickTime = now;
+            let type = null;
+            if (element === scoreDisplay) type = 'score';
+            else if (element === timerDisplay) type = 'timer';
+            else return;
+            clickSequence.push(type);
+            if (clickSequence.length === SEQUENCE.length) {
+                let match = true;
+                for (let i = 0; i < SEQUENCE.length; i++) {
+                    if (clickSequence[i] !== SEQUENCE[i]) { match = false; break; }
+                }
+                if (match) {
+                    debugMode = !debugMode;
+                    if (debugMode) {
+                        showToast('🛠️ Debug Mode 已开启！', true);
+                        if (isGameRunning) startDebugLoop();
+                    } else {
+                        showToast('🛠️ Debug Mode 已关闭', false);
+                        stopDebugLoop();
+                    }
+                    clickSequence = [];
+                } else {
+                    clickSequence = [];
+                }
+            }
+        }
+
+        function startDebugLoop() {
+            if (debugAnimFrameId) cancelAnimationFrame(debugAnimFrameId);
+            let frameCount = 0;
+            function loop() {
+                if (!debugMode || !isGameRunning) {
+                    debugAnimFrameId = null;
+                    return;
+                }
+                frameCount++;
+                if (frameCount % 3 === 0) {
+                    for (let item of items) {
+                        const event = new PointerEvent('pointerdown', {
+                            bubbles: true,
+                            cancelable: true,
+                            pointerType: 'touch',
+                        });
+                        item.dispatchEvent(event);
+                    }
+                }
+                debugAnimFrameId = requestAnimationFrame(loop);
+            }
+            debugAnimFrameId = requestAnimationFrame(loop);
+        }
+
+        function stopDebugLoop() {
+            if (debugAnimFrameId) {
+                cancelAnimationFrame(debugAnimFrameId);
+                debugAnimFrameId = null;
+            }
+        }
+
+        function startGame() {
+            if (isGameRunning) return;
+            isGameRunning = true;
+            if (debugMode) {
+                startDebugLoop();
+            }
+            difficultySelector.classList.add('hidden');
+            startBtn.style.display = 'none';
+            if (audio) {
+                if (audio.paused) { audio.play().catch(() => {}); }
+                audio.volume = 1.0;
+                audioStarted = true;
+            }
+            clearInterval(timerInterval);
+            items.forEach(item => item.remove());
+            items = [];
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.textContent = '🏆 0';
+            timerDisplay.textContent = '⏱ 30s';
+            const config = getDifficultyConfig(currentDifficulty);
+            for (let i = 0; i < config.count; i++) {
+                createCat(config.static, config.size);
+            }
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = '⏱ ' + timeLeft + 's';
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            isGameRunning = false;
+            stopDebugLoop();
+            items.forEach(item => item.remove());
+            items = [];
+            startBtn.style.display = 'block';
+            startBtn.style.opacity = '0';
+            startBtn.style.pointerEvents = 'none';
+            resultScore.textContent = score + ' 分';
+            let modeName = getModeName(currentDifficulty);
+            if (debugMode) {
+                modeName += ' 🛠️ Debug Mode';
+            }
+            modeDisplay.textContent = '🎯 模式：' + modeName;
+            const shareText = '我在打小鸡裹lnchestn中获得了' + score + '分（' + modeName + '），你也来试试吧！';
+            shareTextPreview.textContent = shareText;
+            modalActions.classList.remove('show');
+            shareTextPreview.classList.remove('show');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                shareTextPreview.classList.add('show');
+                modalActions.classList.add('show');
+                if (!canShare) {
+                    shareBtn.style.display = 'none';
+                    restartBtn.style.flex = '1';
+                    restartBtn.style.width = '100%';
+                } else {
+                    shareBtn.style.display = 'block';
+                    restartBtn.style.flex = '1';
+                    shareBtn.style.flex = '1';
+                }
+            }, 600);
+            if (audio) { audio.volume = 0.4; }
+        }
+
+        restartBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+            if (audio) { audio.volume = 0.4; }
+            startBtn.style.opacity = '1';
+            startBtn.style.pointerEvents = 'auto';
+            startBtn.style.display = 'block';
+            difficultySelector.classList.remove('hidden');
+            shareBtn.style.display = '';
+            restartBtn.style.flex = '';
+            restartBtn.style.width = '';
+            isGameRunning = false;
+        });
+
+        shareBtn.addEventListener('click', async function() {
+            if (!canShare) {
+                showToast('❌ 当前环境不支持复制', false);
+                return;
+            }
+            const textToCopy = shareTextPreview.textContent;
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(textToCopy);
+                    showToast('✅ 复制成功！快分享给朋友吧~', true);
+                    return;
+                } catch (err) { console.warn('Clipboard API 失败:', err); }
+            }
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            textArea.style.left = '-9999px';
+            textArea.style.top = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) showToast('✅ 复制成功！快分享给朋友吧~', true);
+                else showToast('❌ 复制失败，请长按文字手动复制。', false);
+            } catch (err) {
+                showToast('❌ 复制失败，请长按文字手动复制。', false);
+            }
+            document.body.removeChild(textArea);
+        });
+
+        scoreDisplay.addEventListener('pointerdown', function(e) {
+            e.stopPropagation();
+            handleDebugClick(this);
+        });
+        timerDisplay.addEventListener('pointerdown', function(e) {
+            e.stopPropagation();
+            handleDebugClick(this);
+        });
+
+        diffBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                diffBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentDifficulty = this.dataset.diff;
+            });
+            btn.addEventListener('touchstart', function(e) { }, { passive: true });
+        });
+
+        startBtn.addEventListener('click', startGame);
+
+        document.querySelector('.diff-btn[data-diff="easy"]')?.classList.add('active');
+        currentDifficulty = 'easy';
+
+        console.log('🎮 打小鸡裹lnchestn 已加载！');
+        console.log('📌 难度: ' + currentDifficulty);
+        console.log('🔧 隐藏 Debug');
+    </script>
+</body>
+</html>
