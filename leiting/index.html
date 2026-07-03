@@ -8,9 +8,18 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        *:focus, *:focus-visible { outline: none !important; }
-        * { -webkit-tap-highlight-color: transparent; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        *:focus,
+        *:focus-visible {
+            outline: none !important;
+        }
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -52,7 +61,9 @@
             justify-content: center;
             gap: 0.1rem 0.6rem;
         }
-        .main-title span { color: #2d4a2d; }
+        .main-title span {
+            color: #2d4a2d;
+        }
 
         .sub {
             font-size: clamp(0.8rem, 2vw, 1rem);
@@ -119,15 +130,41 @@
         }
 
         @media (max-width: 480px) {
-            .main-title { font-size: clamp(2.8rem, 10vw, 4.5rem); letter-spacing: 4px; }
-            .sub { font-size: 0.7rem; letter-spacing: 6px; margin-bottom: 1.8rem; }
-            .btn { font-size: 0.9rem; padding: 0.7rem 1.2rem; }
-            .button-group { gap: 1rem; }
-            .footer-credit { font-size: 0.6rem; bottom: 16px; }
+            .main-title {
+                font-size: clamp(2.8rem, 10vw, 4.5rem);
+                letter-spacing: 4px;
+            }
+            .sub {
+                font-size: 0.7rem;
+                letter-spacing: 6px;
+                margin-bottom: 1.8rem;
+            }
+            .btn {
+                font-size: 0.9rem;
+                padding: 0.7rem 1.2rem;
+            }
+            .button-group {
+                gap: 1rem;
+            }
+            .footer-credit {
+                font-size: 0.6rem;
+                bottom: 16px;
+            }
         }
 
-        .fade-in { animation: fadeUp 0.7s ease forwards; }
-        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
+        .fade-in {
+            animation: fadeUp 0.7s ease forwards;
+        }
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -141,11 +178,13 @@
         <div class="sub">· 工 具 ·</div>
 
         <div class="button-group">
-            <!-- 原有按钮文字中的“雷霆”已改为“工具” -->
-            <a href="https://woyaojava.github.io/leiting/fanyi" target="_blank" class="btn">工具翻译器 by 宵夜</a>
-            <a href="https://woyaojava.github.io/leiting/yinpin" target="_blank" class="btn">工具音频编辑器 by 宵夜</a>
-            <!-- 新增按钮 -->
+            <!-- 所有“工具”均已改为“雷霆” -->
+            <a href="https://woyaojava.github.io/leiting/fanyi" target="_blank" class="btn">雷霆翻译器 by 宵夜</a>
+            <a href="https://woyaojava.github.io/leiting/yinpin" target="_blank" class="btn">雷霆音频编辑器 by 宵夜</a>
+            <!-- 保留原有的 #FF00FF 一键生成器 -->
             <a href="https://woyaojava.github.io/leiting/ff00ff" target="_blank" class="btn">#FF00FF 一键生成器</a>
+            <!-- 新增镜像一键生成器 -->
+            <a href="https://woyaojava.github.io/leiting/mirror" target="_blank" class="btn">镜像一键生成器</a>
         </div>
     </div>
 
