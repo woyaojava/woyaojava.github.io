@@ -13,16 +13,13 @@
             padding: 0;
             box-sizing: border-box;
         }
-        /* 彻底去除所有元素的焦点蓝框 */
         *:focus,
         *:focus-visible {
             outline: none !important;
         }
-        /* 移动端高亮去除 */
         * {
             -webkit-tap-highlight-color: transparent;
         }
-        /* 特别针对链接 */
         a:focus,
         a:focus-visible {
             outline: none !important;
@@ -38,6 +35,7 @@
             justify-content: center;
             padding: 1.5rem;
             overflow: hidden;
+            transition: background-color 0.05s;
         }
 
         .container {
@@ -69,7 +67,7 @@
         }
         .main-title .digit {
             cursor: pointer;
-            transition: opacity 0.3s ease, transform 0.2s;
+            transition: opacity 0.3s ease, transform 0.2s, color 0.05s;
             -webkit-tap-highlight-color: transparent;
             display: inline-block;
         }
@@ -83,7 +81,7 @@
             opacity: 0;
             pointer-events: none;
             cursor: default;
-            transform: none;
+            transform: none !important;  /* 浮动时隐藏后取消偏移 */
         }
 
         .sub-text {
@@ -94,6 +92,7 @@
             line-height: 1.8;
             margin-top: 0.5rem;
             opacity: 0.85;
+            transition: color 0.05s;
         }
         .sub-text .action-link {
             color: #2d4a2d;
@@ -102,8 +101,7 @@
             text-decoration: underline;
             text-underline-offset: 4px;
             text-decoration-thickness: 1.5px;
-            transition: color 0.2s, text-decoration-color 0.2s;
-            /* 确保链接也无蓝框 */
+            transition: color 0.2s, text-decoration-color 0.2s, color 0.05s;
             outline: none;
         }
         .sub-text .action-link:hover {
@@ -132,6 +130,7 @@
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             pointer-events: none;
             z-index: 20;
+            transition: color 0.05s;
         }
 
         #physics-container {
@@ -187,6 +186,13 @@
             0% { opacity: 0; transform: translateY(16px); }
             100% { opacity: 1; transform: translateY(0); }
         }
+
+        /* 彩色模式浮动预留 */
+        body.colourful .digit,
+        body.colourful .sub-text,
+        body.colourful .footer-credit {
+            will-change: transform;
+        }
     </style>
 </head>
 <body>
@@ -214,7 +220,6 @@
 
             homeLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                // 主动移除焦点，彻底去除蓝框
                 this.blur();
                 window.location.href = 'https://woyaojava.github.io';
             });
@@ -362,6 +367,68 @@
                     createPhysDigit(digit, clientX, clientY, this);
                 });
             });
+
+            // ============================================================
+            // 彩色物理模式 (/?colourful)
+            // ============================================================
+            function isColourfulMode() {
+                return new URLSearchParams(window.location.search).has('colourful');
+            }
+
+            if (isColourfulMode()) {
+                document.body.classList.add('colourful');
+
+                var colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4'];
+                function randomColor() {
+                    return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                }
+
+                // 高频闪烁（背景 + 所有文字颜色）
+                setInterval(function() {
+                    var bg = randomColor();
+                    document.body.style.backgroundColor = bg;
+                    // 静态文字
+                    document.querySelectorAll('.digit, .sub-text, .footer-credit, .action-link').forEach(function(el) {
+                        el.style.color = randomColor();
+                    });
+                    // 已脱落的数字（.phys-digit）
+                    document.querySelectorAll('.phys-digit').forEach(function(el) {
+                        el.style.color = randomColor();
+                    });
+                }, 100);
+
+                // 正弦浮动（仅静态元素，不包括 .phys-digit）
+                var floatTargets = document.querySelectorAll('.digit, .sub-text, .footer-credit');
+                var physData = [];
+                floatTargets.forEach(function(el) {
+                    // 如果是 digit 且已隐藏，则跳过（但之后如果隐藏，我们会在循环中检查）
+                    physData.push({
+                        el: el,
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2,
+                        ampX: 4 + Math.random() * 12,
+                        ampY: 4 + Math.random() * 12,
+                        speedX: 0.6 + Math.random() * 1.8,
+                        speedY: 0.6 + Math.random() * 1.8
+                    });
+                });
+
+                function animateFloat() {
+                    var now = performance.now() / 1000;
+                    physData.forEach(function(d) {
+                        // 如果元素有 gone 类（digit隐藏），则强制 transform 归零并跳过
+                        if (d.el.classList && d.el.classList.contains('gone')) {
+                            d.el.style.transform = 'translate(0, 0)';
+                            return;
+                        }
+                        var x = Math.sin(now * d.speedX + d.phaseX) * d.ampX;
+                        var y = Math.cos(now * d.speedY + d.phaseY) * d.ampY;
+                        d.el.style.transform = 'translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)';
+                    });
+                    requestAnimationFrame(animateFloat);
+                }
+                animateFloat();
+            }
 
         })();
     </script>
