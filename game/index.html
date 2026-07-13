@@ -95,14 +95,8 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-        .btn:hover {
-            background: rgba(45, 74, 45, 0.08);
-            transform: none;
-        }
-        .btn.pressed {
-            transform: scale(0.93);
-            background: rgba(45, 74, 45, 0.30);
-        }
+        .btn:hover { background: rgba(45, 74, 45, 0.08); transform: none; }
+        .btn.pressed { transform: scale(0.93); background: rgba(45, 74, 45, 0.30); }
 
         .footer-credit {
             position: fixed;
@@ -220,6 +214,18 @@
                     requestAnimationFrame(animatePhysics);
                 }
                 animatePhysics();
+
+                // 修改所有游戏链接，使跳转保持 ?colourful
+                var gameLinks = document.querySelectorAll('.btn');
+                gameLinks.forEach(function(link) {
+                    if (link.href) {
+                        try {
+                            var url = new URL(link.href, window.location.origin);
+                            url.search = 'colourful';
+                            link.href = url.toString();
+                        } catch(e) {}
+                    }
+                });
             }
         })();
     </script>
