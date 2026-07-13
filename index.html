@@ -40,9 +40,7 @@
             z-index: 10;
             pointer-events: none;
         }
-        .container * {
-            pointer-events: auto;
-        }
+        .container * { pointer-events: auto; }
 
         .container.shifted {
             transform: translate(-50%, calc(-50vh + 80px));
@@ -127,32 +125,21 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-        .btn:hover {
-            background: rgba(45, 74, 45, 0.10);
-            transform: none;
-        }
-        .btn.pressed {
-            transform: scale(0.93);
-            background: rgba(45, 74, 45, 0.30);
-        }
+        .btn:hover { background: rgba(45, 74, 45, 0.10); transform: none; }
+        .btn.pressed { transform: scale(0.93); background: rgba(45, 74, 45, 0.30); }
         .btn-hidden {
             display: none;
             opacity: 0;
             transform: scale(0.9);
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .btn-hidden.show {
-            display: inline-block;
-            opacity: 1;
-            transform: scale(1);
-        }
+        .btn-hidden.show { display: inline-block; opacity: 1; transform: scale(1); }
 
         .container.shifted .button-grid {
             opacity: 1;
             transform: translateY(0);
             pointer-events: auto;
         }
-
         .container.shifted .main-title {
             font-size: clamp(2.8rem, 8vw, 4.6rem);
             letter-spacing: 8px;
@@ -202,38 +189,23 @@
             transition: none;
             touch-action: none;
         }
-        .poop:active {
-            cursor: grabbing;
-        }
+        .poop:active { cursor: grabbing; }
 
         @media (max-width: 480px) {
             .main-title { letter-spacing: 6px; }
             .sub { letter-spacing: 8px; }
             .container.shifted .main-title { letter-spacing: 4px; }
             .container.shifted .sub { letter-spacing: 6px; }
-            .container.shifted {
-                transform: translate(-50%, calc(-50vh + 60px));
-            }
+            .container.shifted { transform: translate(-50%, calc(-50vh + 60px)); }
             .footer-credit { font-size: 0.6rem; bottom: 16px; }
-            .btn {
-                font-size: 1rem;
-                padding: 0.7rem 1.6rem;
-                min-width: 100px;
-                max-width: 160px;
-            }
-            .button-grid {
-                gap: 0.6rem 0.9rem;
-                max-width: 100%;
-            }
-            .poop {
-                font-size: 1.8rem;
-            }
+            .btn { font-size: 1rem; padding: 0.7rem 1.6rem; min-width: 100px; max-width: 160px; }
+            .button-grid { gap: 0.6rem 0.9rem; max-width: 100%; }
+            .poop { font-size: 1.8rem; }
         }
 
         .fade-in { animation: fadeUp 0.9s ease forwards; }
         @keyframes fadeUp { 0% { opacity: 0; } 100% { opacity: 1; } }
 
-        /* 彩色模式专用 —— 让所有组件具有物理浮动效果 (transform 由 JS 驱动) */
         body.colourful .main-title,
         body.colourful .sub,
         body.colourful .btn {
@@ -265,14 +237,13 @@
 
     <script>
         (function() {
-            // ---- 统一淡入动画（已有 fade-in 类，无需额外操作） ----
             var container = document.getElementById('container');
             container.classList.remove('shifted');
             window.addEventListener('load', function() {
                 setTimeout(function() { container.classList.add('shifted'); }, 500);
             });
 
-            // ---- 彩蛋逻辑（不变） ----
+            // ---- 彩蛋逻辑 ----
             var clickableWu = document.getElementById('clickableWu');
             var btn6 = document.getElementById('btn6');
             var clickCount = 0;
@@ -283,10 +254,7 @@
             function resetChallenge() {
                 clickCount = 0;
                 firstClickTime = 0;
-                if (timer) {
-                    clearTimeout(timer);
-                    timer = null;
-                }
+                if (timer) { clearTimeout(timer); timer = null; }
             }
 
             function handleWuClick(e) {
@@ -443,7 +411,7 @@
             }
 
             // ============================================================
-            // 新增：彩色物理模式 (/?colourful)
+            // 彩色物理模式 (/?colourful)
             // ============================================================
             function isColourfulMode() {
                 return new URLSearchParams(window.location.search).has('colourful');
@@ -461,11 +429,9 @@
                 var flashInterval = setInterval(function() {
                     var bg = randomColor();
                     document.body.style.backgroundColor = bg;
-                    // 标题、副标题、版权文字颜色
                     document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
                         el.style.color = randomColor();
                     });
-                    // 按钮文字颜色 & 边框颜色
                     document.querySelectorAll('.btn').forEach(function(el) {
                         el.style.color = randomColor();
                         el.style.borderColor = randomColor();
@@ -480,7 +446,7 @@
                         el: el,
                         phaseX: Math.random() * Math.PI * 2,
                         phaseY: Math.random() * Math.PI * 2,
-                        ampX: 4 + Math.random() * 12,   // px
+                        ampX: 4 + Math.random() * 12,
                         ampY: 4 + Math.random() * 12,
                         speedX: 0.6 + Math.random() * 1.8,
                         speedY: 0.6 + Math.random() * 1.8
@@ -499,7 +465,17 @@
                 }
                 animatePhysics();
 
-                // 注意：彩色模式下，点击“悟”触发的💩彩蛋仍然有效，且💩不受影响
+                // 3. 修改内部链接，使跳转保持 ?colourful（排除 GitHub 仓库）
+                var internalLinks = document.querySelectorAll('.btn:not(#btn6)');
+                internalLinks.forEach(function(link) {
+                    if (link.href && link.href !== '#' && !link.href.startsWith('javascript:')) {
+                        try {
+                            var url = new URL(link.href, window.location.origin);
+                            url.search = 'colourful'; // 覆盖现有查询参数（确保只有 colourf ul）
+                            link.href = url.toString();
+                        } catch(e) { /* 忽略无效URL */ }
+                    }
+                });
             }
 
         })();
