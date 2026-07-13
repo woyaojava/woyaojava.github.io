@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>捂五悟Website</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *:focus, *:focus-visible { outline: none !important; }
+
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #dce8d5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.05s;
+        }
+
+        .container {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 780px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: transform;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .container * { pointer-events: auto; }
+
+        .container.shifted {
+            transform: translate(-50%, calc(-50vh + 80px));
+        }
+
+        .title-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .main-title {
+            font-size: clamp(4.2rem, 16vw, 8rem);
+            font-weight: 700;
+            letter-spacing: 14px;
+            line-height: 1.15;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.1rem 1.2rem;
+            color: #2d4a2d;
+            user-select: none;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .main-title span { color: #2d4a2d; cursor: default; transition: color 0.05s; }
+        .main-title .clickable-悟 {
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .main-title .clickable-悟:hover,
+        .main-title .clickable-悟:active {
+            color: inherit;
+            text-shadow: none;
+            transform: none;
+        }
+
+        .sub {
+            font-size: clamp(0.8rem, 2.2vw, 1.2rem);
+            font-weight: 300;
+            letter-spacing: 14px;
+            text-transform: uppercase;
+            color: #3d5a3d;
+            opacity: 0.7;
+            margin-top: 0.1rem;
+            transition: color 0.05s;
+        }
+
+        .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem 1.2rem;
+            margin-top: 2.2rem;
+            width: 100%;
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.5s ease 0.7s, transform 0.5s ease 0.7s;
+            pointer-events: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.9rem 2.2rem;
+            border-radius: 60px;
+            background: rgba(45, 74, 45, 0.10);
+            border: 1.5px solid #2d4a2d;
+            color: #2d4a2d;
+            font-size: 1.15rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-decoration: none;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            cursor: pointer;
+            text-align: center;
+            flex: 1 0 auto;
+            min-width: 130px;
+            max-width: 200px;
+            transition: transform 0.12s, background 0.12s, color 0.05s, border-color 0.05s;
+            box-shadow: none;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .btn:hover { background: rgba(45, 74, 45, 0.10); transform: none; }
+        .btn.pressed { transform: scale(0.93); background: rgba(45, 74, 45, 0.30); }
+        .btn-hidden {
+            display: none;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .btn-hidden.show { display: inline-block; opacity: 1; transform: scale(1); }
+
+        .container.shifted .button-grid {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .container.shifted .main-title {
+            font-size: clamp(2.8rem, 8vw, 4.6rem);
+            letter-spacing: 8px;
+            gap: 0.1rem 0.6rem;
+        }
+        .container.shifted .sub {
+            font-size: clamp(0.6rem, 1.6vw, 0.9rem);
+            letter-spacing: 8px;
+            margin-top: 0.2rem;
+        }
+
+        .footer-credit {
+            position: fixed;
+            bottom: 24px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: #5a7a5a;
+            letter-spacing: 2px;
+            opacity: 0.55;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            pointer-events: none;
+            z-index: 20;
+            transition: color 0.05s;
+        }
+
+        #poop-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .poop {
+            position: absolute;
+            font-size: 2.2rem;
+            line-height: 1;
+            user-select: none;
+            pointer-events: auto;
+            cursor: grab;
+            will-change: transform;
+            transition: none;
+            touch-action: none;
+        }
+        .poop:active { cursor: grabbing; }
+
+        @media (max-width: 480px) {
+            .main-title { letter-spacing: 6px; }
+            .sub { letter-spacing: 8px; }
+            .container.shifted .main-title { letter-spacing: 4px; }
+            .container.shifted .sub { letter-spacing: 6px; }
+            .container.shifted { transform: translate(-50%, calc(-50vh + 60px)); }
+            .footer-credit { font-size: 0.6rem; bottom: 16px; }
+            .btn { font-size: 1rem; padding: 0.7rem 1.6rem; min-width: 100px; max-width: 160px; }
+            .button-grid { gap: 0.6rem 0.9rem; max-width: 100%; }
+            .poop { font-size: 1.8rem; }
+        }
+
+        .fade-in { animation: fadeUp 0.9s ease forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+        body.colourful .main-title,
+        body.colourful .sub,
+        body.colourful .btn {
+            will-change: transform;
+        }
+    </style>
+</head>
+<body>
+    <div class="container fade-in" id="container">
+        <div class="title-wrapper">
+            <h1 class="main-title">
+                <span>捂</span>
+                <span>五</span>
+                <span class="clickable-悟" id="clickableWu">悟</span>
+            </h1>
+            <div class="sub">· wu · wu · wu ·</div>
+        </div>
+        <div class="button-grid" id="buttonGrid">
+            <a href="https://woyaojava.github.io/game/" class="btn" id="btn1">游戏</a>
+            <a href="https://woyaojava.github.io/tool" class="btn" id="btn2">工具</a>
+            <a href="#" class="btn" id="btn3">按钮三</a>
+            <a href="#" class="btn" id="btn4">按钮四</a>
+            <a href="#" class="btn" id="btn5">按钮五</a>
+            <a href="https://github.com/woyaojava/woyaojava.github.io" class="btn btn-hidden" id="btn6">代码（史山）</a>
+        </div>
+    </div>
+    <div id="poop-container"></div>
+    <div class="footer-credit">Powered by DeepSeek</div>
+
+    <script>
+        (function() {
+            var container = document.getElementById('container');
+            container.classList.remove('shifted');
+            window.addEventListener('load', function() {
+                setTimeout(function() { container.classList.add('shifted'); }, 500);
+            });
+
+            // ---- 彩蛋逻辑 ----
+            var clickableWu = document.getElementById('clickableWu');
+            var btn6 = document.getElementById('btn6');
+            var clickCount = 0;
+            var firstClickTime = 0;
+            var unlocked = false;
+            var timer = null;
+
+            function resetChallenge() {
+                clickCount = 0;
+                firstClickTime = 0;
+                if (timer) { clearTimeout(timer); timer = null; }
+            }
+
+            function handleWuClick(e) {
+                if (unlocked) return;
+                var now = Date.now();
+                if (clickCount === 0) firstClickTime = now;
+                if (now - firstClickTime > 3000) {
+                    resetChallenge();
+                    clickCount = 1;
+                    firstClickTime = now;
+                    if (timer) clearTimeout(timer);
+                    timer = setTimeout(function() { resetChallenge(); timer = null; }, 3000);
+                    return;
+                }
+                clickCount++;
+                if (clickCount >= 10) {
+                    unlocked = true;
+                    btn6.classList.add('show');
+                    clickableWu.style.cursor = 'default';
+                    clickableWu.onclick = null;
+                    if (timer) { clearTimeout(timer); timer = null; }
+                    createPoops();
+                    return;
+                }
+                if (timer) { clearTimeout(timer); timer = null; }
+                var remaining = 3000 - (now - firstClickTime);
+                if (remaining > 0) {
+                    timer = setTimeout(function() { resetChallenge(); timer = null; }, remaining);
+                }
+            }
+            clickableWu.addEventListener('click', handleWuClick);
+
+            // ---- 按钮点击特效 ----
+            var buttons = document.querySelectorAll('.btn');
+            buttons.forEach(function(btn) {
+                btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
+                btn.addEventListener('mouseup', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('mouseleave', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('touchstart', function(e) { this.classList.add('pressed'); }, { passive: true });
+                btn.addEventListener('touchend', function(e) { this.classList.remove('pressed'); }, { passive: true });
+                btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
+            });
+
+            // ---- 占位按钮 ----
+            var btn3 = document.getElementById('btn3');
+            var btn4 = document.getElementById('btn4');
+            var btn5 = document.getElementById('btn5');
+            function delayedAlert(msg) { setTimeout(function() { alert(msg); }, 180); }
+            btn3.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮三功能待添加'); });
+            btn4.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮四功能待添加'); });
+            btn5.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮五功能待添加'); });
+
+            // ---- 物理引擎 + 拖拽 (彩蛋💩) ----
+            function createPoops() {
+                var container = document.getElementById('poop-container');
+                var poops = [];
+                var count = 15;
+                var gravity = 0.25;
+                var damping = 0.85;
+                var friction = 0.99;
+
+                for (var i = 0; i < count; i++) {
+                    var el = document.createElement('div');
+                    el.className = 'poop';
+                    el.textContent = '💩';
+                    var size = 1.6 + Math.random() * 1.8;
+                    el.style.fontSize = size + 'rem';
+                    var w = window.innerWidth;
+                    var h = window.innerHeight;
+                    var x = Math.random() * (w - 60);
+                    var y = Math.random() * (h - 60);
+                    el.style.left = x + 'px';
+                    el.style.top = y + 'px';
+                    container.appendChild(el);
+
+                    var radius = size * 16;
+                    var obj = {
+                        el: el,
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 4 - 2,
+                        radius: radius,
+                        size: size,
+                        isDragging: false,
+                        dragOffsetX: 0,
+                        dragOffsetY: 0
+                    };
+                    poops.push(obj);
+
+                    (function(p) {
+                        function onStart(e) {
+                            e.preventDefault();
+                            var touch = e.touches ? e.touches[0] : e;
+                            var rect = p.el.getBoundingClientRect();
+                            p.dragOffsetX = touch.clientX - rect.left;
+                            p.dragOffsetY = touch.clientY - rect.top;
+                            p.isDragging = true;
+                            p.vx = 0;
+                            p.vy = 0;
+                        }
+                        function onMove(e) {
+                            if (!p.isDragging) return;
+                            e.preventDefault();
+                            var touch = e.touches ? e.touches[0] : e;
+                            var newX = touch.clientX - p.dragOffsetX;
+                            var newY = touch.clientY - p.dragOffsetY;
+                            var w = window.innerWidth;
+                            var h = window.innerHeight;
+                            newX = Math.max(0, Math.min(newX, w - p.radius));
+                            newY = Math.max(0, Math.min(newY, h - p.radius));
+                            p.x = newX;
+                            p.y = newY;
+                            p.el.style.left = p.x + 'px';
+                            p.el.style.top = p.y + 'px';
+                        }
+                        function onEnd(e) {
+                            if (p.isDragging) {
+                                p.isDragging = false;
+                                p.vx = (Math.random() - 0.5) * 4;
+                                p.vy = (Math.random() - 0.5) * 4 - 2;
+                            }
+                        }
+                        el.addEventListener('mousedown', onStart);
+                        document.addEventListener('mousemove', onMove);
+                        document.addEventListener('mouseup', onEnd);
+                        el.addEventListener('touchstart', onStart, { passive: false });
+                        document.addEventListener('touchmove', onMove, { passive: false });
+                        document.addEventListener('touchend', onEnd, { passive: false });
+                        document.addEventListener('touchcancel', onEnd, { passive: false });
+                    })(obj);
+                }
+
+                function updatePoops() {
+                    var w = window.innerWidth;
+                    var h = window.innerHeight;
+                    for (var i = 0; i < poops.length; i++) {
+                        var p = poops[i];
+                        if (p.isDragging) continue;
+                        p.vy += gravity;
+                        p.vx *= friction;
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.x < 0) { p.x = 0; p.vx = -p.vx * damping; }
+                        else if (p.x + p.radius > w) { p.x = w - p.radius; p.vx = -p.vx * damping; }
+                        if (p.y < 0) { p.y = 0; p.vy = -p.vy * damping; }
+                        else if (p.y + p.radius > h) { p.y = h - p.radius; p.vy = -p.vy * damping; }
+                        p.el.style.left = p.x + 'px';
+                        p.el.style.top = p.y + 'px';
+                    }
+                    requestAnimationFrame(updatePoops);
+                }
+                requestAnimationFrame(updatePoops);
+            }
+
+            // ============================================================
+            // 彩色物理模式 (/?colourful)
+            // ============================================================
+            function isColourfulMode() {
+                return new URLSearchParams(window.location.search).has('colourful');
+            }
+
+            if (isColourfulMode()) {
+                document.body.classList.add('colourful');
+
+                // 1. 高频闪烁颜色
+                var colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4'];
+                function randomColor() {
+                    return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                }
+
+                var flashInterval = setInterval(function() {
+                    var bg = randomColor();
+                    document.body.style.backgroundColor = bg;
+                    document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
+                        el.style.color = randomColor();
+                    });
+                    document.querySelectorAll('.btn').forEach(function(el) {
+                        el.style.color = randomColor();
+                        el.style.borderColor = randomColor();
+                    });
+                }, 100);
+
+                // 2. 物理浮动效果（所有主要组件）
+                var elements = document.querySelectorAll('.main-title, .sub, .btn');
+                var physData = [];
+                elements.forEach(function(el) {
+                    var data = {
+                        el: el,
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2,
+                        ampX: 4 + Math.random() * 12,
+                        ampY: 4 + Math.random() * 12,
+                        speedX: 0.6 + Math.random() * 1.8,
+                        speedY: 0.6 + Math.random() * 1.8
+                    };
+                    physData.push(data);
+                });
+
+                function animatePhysics() {
+                    var now = performance.now() / 1000;
+                    physData.forEach(function(d) {
+                        var x = Math.sin(now * d.speedX + d.phaseX) * d.ampX;
+                        var y = Math.cos(now * d.speedY + d.phaseY) * d.ampY;
+                        d.el.style.transform = 'translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)';
+                    });
+                    requestAnimationFrame(animatePhysics);
+                }
+                animatePhysics();
+
+                // 3. 修改内部链接，使跳转保持 ?colourful（仅游戏和工具）
+                var internalLinks = document.querySelectorAll('#btn1, #btn2');
+                internalLinks.forEach(function(link) {
+                    if (link.href && link.href !== '#') {
+                        try {
+                            var url = new URL(link.href, window.location.origin);
+                            url.search = 'colourful';
+                            link.href = url.toString();
+                        } catch(e) { /* 忽略无效URL */ }
+                    }
+                });
+                // 其他按钮保持不变（btn3, btn4, btn5, btn6）
+            }
+
+        })();
+    </script>
+</body>
+</html>
