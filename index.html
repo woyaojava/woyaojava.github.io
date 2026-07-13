@@ -3,153 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>捂五悟Website</title>
+    <title>404 · 捂五悟</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         *:focus, *:focus-visible { outline: none !important; }
+        * { -webkit-tap-highlight-color: transparent; }
+        a:focus, a:focus-visible { outline: none !important; }
 
         body {
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             min-height: 100vh;
             background: #dce8d5;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 1.5rem;
             overflow: hidden;
-            margin: 0;
-            padding: 0;
             transition: background-color 0.05s;
         }
 
         .container {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            max-width: 780px;
-            padding: 1.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-            will-change: transform;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
             z-index: 10;
             pointer-events: none;
         }
         .container * { pointer-events: auto; }
 
-        .container.shifted {
-            transform: translate(-50%, calc(-50vh + 80px));
-        }
-
-        .title-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-        }
         .main-title {
-            font-size: clamp(4.2rem, 16vw, 8rem);
+            font-size: clamp(8rem, 30vw, 14rem);
             font-weight: 700;
-            letter-spacing: 14px;
-            line-height: 1.15;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.1rem 1.2rem;
+            letter-spacing: 8px;
+            line-height: 1;
             color: #2d4a2d;
             user-select: none;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            margin-bottom: 0.2rem;
+            display: flex;
+            justify-content: center;
+            gap: 0.1em;
         }
-        .main-title span { color: #2d4a2d; cursor: default; transition: color 0.05s; }
-        .main-title .clickable-悟 {
+        .main-title .digit {
             cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.2s, color 0.05s;
             -webkit-tap-highlight-color: transparent;
+            display: inline-block;
         }
-        .main-title .clickable-悟:hover,
-        .main-title .clickable-悟:active {
-            color: inherit;
-            text-shadow: none;
-            transform: none;
+        .main-title .digit:hover { color: #1f3a1f; }
+        .main-title .digit:active { transform: scale(0.92); }
+        .main-title .digit.gone {
+            opacity: 0;
+            pointer-events: none;
+            cursor: default;
+            transform: none !important;
         }
 
-        .sub {
-            font-size: clamp(0.8rem, 2.2vw, 1.2rem);
+        .sub-text {
+            font-size: clamp(1rem, 2.5vw, 1.4rem);
             font-weight: 300;
-            letter-spacing: 14px;
-            text-transform: uppercase;
             color: #3d5a3d;
-            opacity: 0.7;
-            margin-top: 0.1rem;
+            letter-spacing: 2px;
+            line-height: 1.8;
+            margin-top: 0.5rem;
+            opacity: 0.85;
             transition: color 0.05s;
         }
-
-        .button-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.8rem 1.2rem;
-            margin-top: 2.2rem;
-            width: 100%;
-            max-width: 600px;
-            opacity: 0;
-            transform: translateY(12px);
-            transition: opacity 0.5s ease 0.7s, transform 0.5s ease 0.7s;
-            pointer-events: none;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 0.9rem 2.2rem;
-            border-radius: 60px;
-            background: rgba(45, 74, 45, 0.10);
-            border: 1.5px solid #2d4a2d;
+        .sub-text .action-link {
             color: #2d4a2d;
-            font-size: 1.15rem;
-            font-weight: 500;
-            letter-spacing: 2px;
-            text-decoration: none;
-            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-weight: 600;
             cursor: pointer;
-            text-align: center;
-            flex: 1 0 auto;
-            min-width: 130px;
-            max-width: 200px;
-            transition: transform 0.12s, background 0.12s, color 0.05s, border-color 0.05s;
-            box-shadow: none;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            text-decoration-thickness: 1.5px;
+            transition: color 0.2s, text-decoration-color 0.2s, color 0.05s;
+            outline: none;
         }
-        .btn:hover { background: rgba(45, 74, 45, 0.10); transform: none; }
-        .btn.pressed { transform: scale(0.93); background: rgba(45, 74, 45, 0.30); }
-        .btn-hidden {
-            display: none;
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
-        .btn-hidden.show { display: inline-block; opacity: 1; transform: scale(1); }
-
-        .container.shifted .button-grid {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-        .container.shifted .main-title {
-            font-size: clamp(2.8rem, 8vw, 4.6rem);
-            letter-spacing: 8px;
-            gap: 0.1rem 0.6rem;
-        }
-        .container.shifted .sub {
-            font-size: clamp(0.6rem, 1.6vw, 0.9rem);
-            letter-spacing: 8px;
-            margin-top: 0.2rem;
-        }
+        .sub-text .action-link:hover { color: #1a3a1a; text-decoration-color: #1a3a1a; }
+        .sub-text .action-link:active { transform: scale(0.97); }
+        .sub-text .action-link:focus,
+        .sub-text .action-link:focus-visible { outline: none !important; }
 
         .footer-credit {
             position: fixed;
@@ -161,14 +101,14 @@
             font-weight: 300;
             color: #5a7a5a;
             letter-spacing: 2px;
-            opacity: 0.55;
+            opacity: 0.5;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             pointer-events: none;
             z-index: 20;
             transition: color 0.05s;
         }
 
-        #poop-container {
+        #physics-container {
             position: fixed;
             top: 0;
             left: 0;
@@ -178,237 +118,203 @@
             z-index: 1;
             overflow: hidden;
         }
-        .poop {
+        .phys-digit {
             position: absolute;
-            font-size: 2.2rem;
-            line-height: 1;
+            font-weight: 700;
+            color: #2d4a2d;
             user-select: none;
             pointer-events: auto;
             cursor: grab;
             will-change: transform;
-            transition: none;
             touch-action: none;
+            transition: none;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: inline-block;
+            -webkit-tap-highlight-color: transparent;
         }
-        .poop:active { cursor: grabbing; }
+        .phys-digit:active { cursor: grabbing; }
+        .phys-digit:focus,
+        .phys-digit:focus-visible { outline: none !important; }
 
         @media (max-width: 480px) {
-            .main-title { letter-spacing: 6px; }
-            .sub { letter-spacing: 8px; }
-            .container.shifted .main-title { letter-spacing: 4px; }
-            .container.shifted .sub { letter-spacing: 6px; }
-            .container.shifted { transform: translate(-50%, calc(-50vh + 60px)); }
+            .main-title { font-size: clamp(6rem, 25vw, 10rem); }
+            .sub-text { font-size: 0.9rem; letter-spacing: 1px; }
             .footer-credit { font-size: 0.6rem; bottom: 16px; }
-            .btn { font-size: 1rem; padding: 0.7rem 1.6rem; min-width: 100px; max-width: 160px; }
-            .button-grid { gap: 0.6rem 0.9rem; max-width: 100%; }
-            .poop { font-size: 1.8rem; }
         }
 
-        .fade-in { animation: fadeUp 0.9s ease forwards; }
-        @keyframes fadeUp { 0% { opacity: 0; } 100% { opacity: 1; } }
+        .fade-in { animation: fadeUp 0.8s ease forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(16px); } 100% { opacity: 1; transform: translateY(0); } }
 
-        body.colourful .main-title,
-        body.colourful .sub,
-        body.colourful .btn {
+        body.colourful .digit,
+        body.colourful .sub-text,
+        body.colourful .footer-credit {
             will-change: transform;
         }
     </style>
 </head>
 <body>
-    <div class="container fade-in" id="container">
-        <div class="title-wrapper">
-            <h1 class="main-title">
-                <span>捂</span>
-                <span>五</span>
-                <span class="clickable-悟" id="clickableWu">悟</span>
-            </h1>
-            <div class="sub">· wu · wu · wu ·</div>
+    <div class="container fade-in">
+        <div class="main-title">
+            <span class="digit" data-digit="4">4</span>
+            <span class="digit" data-digit="0">0</span>
+            <span class="digit" data-digit="4">4</span>
         </div>
-        <div class="button-grid" id="buttonGrid">
-            <a href="https://woyaojava.github.io/game/" class="btn" id="btn1">游戏</a>
-            <a href="https://woyaojava.github.io/tool" class="btn" id="btn2">工具</a>
-            <a href="#" class="btn" id="btn3">按钮三</a>
-            <a href="#" class="btn" id="btn4">按钮四</a>
-            <a href="#" class="btn" id="btn5">按钮五</a>
-            <a href="https://github.com/woyaojava/woyaojava.github.io" class="btn btn-hidden" id="btn6">代码（史山）</a>
-        </div>
+        <p class="sub-text">
+            你似乎访问了一个不存在的页面。<br>
+            <span class="action-link" id="homeLink">返回首页</span>
+        </p>
     </div>
-    <div id="poop-container"></div>
+    <div id="physics-container"></div>
     <div class="footer-credit">Powered by DeepSeek</div>
 
     <script>
         (function() {
-            var container = document.getElementById('container');
-            container.classList.remove('shifted');
-            window.addEventListener('load', function() {
-                setTimeout(function() { container.classList.add('shifted'); }, 500);
-            });
+            "use strict";
 
-            // ---- 彩蛋逻辑 ----
-            var clickableWu = document.getElementById('clickableWu');
-            var btn6 = document.getElementById('btn6');
-            var clickCount = 0;
-            var firstClickTime = 0;
-            var unlocked = false;
-            var timer = null;
+            var homeLink = document.getElementById('homeLink');
 
-            function resetChallenge() {
-                clickCount = 0;
-                firstClickTime = 0;
-                if (timer) { clearTimeout(timer); timer = null; }
+            // ---- 物理引擎（数字脱落 + 拖拽） ----
+            var container = document.getElementById('physics-container');
+            var physDigits = [];
+
+            function createPhysDigit(digitChar, clientX, clientY, fromEl) {
+                var style = window.getComputedStyle(fromEl);
+                var fontSize = style.fontSize;
+                var fontWeight = style.fontWeight;
+                var color = style.color;
+                var fontFamily = style.fontFamily;
+
+                var el = document.createElement('div');
+                el.className = 'phys-digit';
+                el.textContent = digitChar;
+                el.style.fontSize = fontSize;
+                el.style.fontWeight = fontWeight;
+                el.style.color = color;
+                el.style.fontFamily = fontFamily;
+                container.appendChild(el);
+
+                var rect = el.getBoundingClientRect();
+                var width = rect.width;
+                var height = rect.height;
+                var radius = Math.max(width, height) / 2;
+
+                var w = window.innerWidth;
+                var h = window.innerHeight;
+                var x = Math.min(Math.max(clientX - width/2, 0), w - width);
+                var y = Math.min(Math.max(clientY - height/2, 0), h - height);
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+
+                var obj = {
+                    el: el,
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 6 - 3,
+                    radius: radius,
+                    isDragging: false,
+                    dragOffsetX: 0,
+                    dragOffsetY: 0
+                };
+                physDigits.push(obj);
+
+                (function(p) {
+                    function onStart(e) {
+                        e.preventDefault();
+                        var touch = e.touches ? e.touches[0] : e;
+                        var rect = p.el.getBoundingClientRect();
+                        p.dragOffsetX = touch.clientX - rect.left;
+                        p.dragOffsetY = touch.clientY - rect.top;
+                        p.isDragging = true;
+                        p.vx = 0;
+                        p.vy = 0;
+                    }
+                    function onMove(e) {
+                        if (!p.isDragging) return;
+                        e.preventDefault();
+                        var touch = e.touches ? e.touches[0] : e;
+                        var newX = touch.clientX - p.dragOffsetX;
+                        var newY = touch.clientY - p.dragOffsetY;
+                        var w = window.innerWidth;
+                        var h = window.innerHeight;
+                        newX = Math.max(0, Math.min(newX, w - p.width));
+                        newY = Math.max(0, Math.min(newY, h - p.height));
+                        p.x = newX;
+                        p.y = newY;
+                        p.el.style.left = p.x + 'px';
+                        p.el.style.top = p.y + 'px';
+                    }
+                    function onEnd(e) {
+                        if (p.isDragging) {
+                            p.isDragging = false;
+                            p.vx = (Math.random() - 0.5) * 6;
+                            p.vy = (Math.random() - 0.5) * 6 - 3;
+                        }
+                    }
+                    el.addEventListener('mousedown', onStart);
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onEnd);
+                    el.addEventListener('touchstart', onStart, { passive: false });
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onEnd, { passive: false });
+                    document.addEventListener('touchcancel', onEnd, { passive: false });
+                })(obj);
+
+                if (!window._physicsRunning) {
+                    window._physicsRunning = true;
+                    requestAnimationFrame(updatePhysics);
+                }
             }
 
-            function handleWuClick(e) {
-                if (unlocked) return;
-                var now = Date.now();
-                if (clickCount === 0) firstClickTime = now;
-                if (now - firstClickTime > 3000) {
-                    resetChallenge();
-                    clickCount = 1;
-                    firstClickTime = now;
-                    if (timer) clearTimeout(timer);
-                    timer = setTimeout(function() { resetChallenge(); timer = null; }, 3000);
-                    return;
-                }
-                clickCount++;
-                if (clickCount >= 10) {
-                    unlocked = true;
-                    btn6.classList.add('show');
-                    clickableWu.style.cursor = 'default';
-                    clickableWu.onclick = null;
-                    if (timer) { clearTimeout(timer); timer = null; }
-                    createPoops();
-                    return;
-                }
-                if (timer) { clearTimeout(timer); timer = null; }
-                var remaining = 3000 - (now - firstClickTime);
-                if (remaining > 0) {
-                    timer = setTimeout(function() { resetChallenge(); timer = null; }, remaining);
-                }
-            }
-            clickableWu.addEventListener('click', handleWuClick);
-
-            // ---- 按钮点击特效 ----
-            var buttons = document.querySelectorAll('.btn');
-            buttons.forEach(function(btn) {
-                btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
-                btn.addEventListener('mouseup', function(e) { this.classList.remove('pressed'); });
-                btn.addEventListener('mouseleave', function(e) { this.classList.remove('pressed'); });
-                btn.addEventListener('touchstart', function(e) { this.classList.add('pressed'); }, { passive: true });
-                btn.addEventListener('touchend', function(e) { this.classList.remove('pressed'); }, { passive: true });
-                btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
-            });
-
-            // ---- 占位按钮 ----
-            var btn3 = document.getElementById('btn3');
-            var btn4 = document.getElementById('btn4');
-            var btn5 = document.getElementById('btn5');
-            function delayedAlert(msg) { setTimeout(function() { alert(msg); }, 180); }
-            btn3.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮三功能待添加'); });
-            btn4.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮四功能待添加'); });
-            btn5.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮五功能待添加'); });
-
-            // ---- 物理引擎 + 拖拽 (彩蛋💩) ----
-            function createPoops() {
-                var container = document.getElementById('poop-container');
-                var poops = [];
-                var count = 15;
+            function updatePhysics() {
+                var w = window.innerWidth;
+                var h = window.innerHeight;
                 var gravity = 0.25;
                 var damping = 0.85;
                 var friction = 0.99;
 
-                for (var i = 0; i < count; i++) {
-                    var el = document.createElement('div');
-                    el.className = 'poop';
-                    el.textContent = '💩';
-                    var size = 1.6 + Math.random() * 1.8;
-                    el.style.fontSize = size + 'rem';
-                    var w = window.innerWidth;
-                    var h = window.innerHeight;
-                    var x = Math.random() * (w - 60);
-                    var y = Math.random() * (h - 60);
-                    el.style.left = x + 'px';
-                    el.style.top = y + 'px';
-                    container.appendChild(el);
+                for (var i = physDigits.length - 1; i >= 0; i--) {
+                    var p = physDigits[i];
+                    if (p.isDragging) continue;
+                    p.vy += gravity;
+                    p.vx *= friction;
+                    p.x += p.vx;
+                    p.y += p.vy;
 
-                    var radius = size * 16;
-                    var obj = {
-                        el: el,
-                        x: x,
-                        y: y,
-                        vx: (Math.random() - 0.5) * 6,
-                        vy: (Math.random() - 0.5) * 4 - 2,
-                        radius: radius,
-                        size: size,
-                        isDragging: false,
-                        dragOffsetX: 0,
-                        dragOffsetY: 0
-                    };
-                    poops.push(obj);
+                    if (p.x < 0) { p.x = 0; p.vx = -p.vx * damping; }
+                    else if (p.x + p.width > w) { p.x = w - p.width; p.vx = -p.vx * damping; }
+                    if (p.y < 0) { p.y = 0; p.vy = -p.vy * damping; }
+                    else if (p.y + p.height > h) { p.y = h - p.height; p.vy = -p.vy * damping; }
 
-                    (function(p) {
-                        function onStart(e) {
-                            e.preventDefault();
-                            var touch = e.touches ? e.touches[0] : e;
-                            var rect = p.el.getBoundingClientRect();
-                            p.dragOffsetX = touch.clientX - rect.left;
-                            p.dragOffsetY = touch.clientY - rect.top;
-                            p.isDragging = true;
-                            p.vx = 0;
-                            p.vy = 0;
-                        }
-                        function onMove(e) {
-                            if (!p.isDragging) return;
-                            e.preventDefault();
-                            var touch = e.touches ? e.touches[0] : e;
-                            var newX = touch.clientX - p.dragOffsetX;
-                            var newY = touch.clientY - p.dragOffsetY;
-                            var w = window.innerWidth;
-                            var h = window.innerHeight;
-                            newX = Math.max(0, Math.min(newX, w - p.radius));
-                            newY = Math.max(0, Math.min(newY, h - p.radius));
-                            p.x = newX;
-                            p.y = newY;
-                            p.el.style.left = p.x + 'px';
-                            p.el.style.top = p.y + 'px';
-                        }
-                        function onEnd(e) {
-                            if (p.isDragging) {
-                                p.isDragging = false;
-                                p.vx = (Math.random() - 0.5) * 4;
-                                p.vy = (Math.random() - 0.5) * 4 - 2;
-                            }
-                        }
-                        el.addEventListener('mousedown', onStart);
-                        document.addEventListener('mousemove', onMove);
-                        document.addEventListener('mouseup', onEnd);
-                        el.addEventListener('touchstart', onStart, { passive: false });
-                        document.addEventListener('touchmove', onMove, { passive: false });
-                        document.addEventListener('touchend', onEnd, { passive: false });
-                        document.addEventListener('touchcancel', onEnd, { passive: false });
-                    })(obj);
+                    p.el.style.left = p.x + 'px';
+                    p.el.style.top = p.y + 'px';
                 }
 
-                function updatePoops() {
-                    var w = window.innerWidth;
-                    var h = window.innerHeight;
-                    for (var i = 0; i < poops.length; i++) {
-                        var p = poops[i];
-                        if (p.isDragging) continue;
-                        p.vy += gravity;
-                        p.vx *= friction;
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        if (p.x < 0) { p.x = 0; p.vx = -p.vx * damping; }
-                        else if (p.x + p.radius > w) { p.x = w - p.radius; p.vx = -p.vx * damping; }
-                        if (p.y < 0) { p.y = 0; p.vy = -p.vy * damping; }
-                        else if (p.y + p.radius > h) { p.y = h - p.radius; p.vy = -p.vy * damping; }
-                        p.el.style.left = p.x + 'px';
-                        p.el.style.top = p.y + 'px';
-                    }
-                    requestAnimationFrame(updatePoops);
+                if (physDigits.length > 0) {
+                    requestAnimationFrame(updatePhysics);
+                } else {
+                    window._physicsRunning = false;
                 }
-                requestAnimationFrame(updatePoops);
             }
+
+            // 硬核模式：点击数字脱落
+            var digitSpans = document.querySelectorAll('.digit');
+            digitSpans.forEach(function(span) {
+                span.addEventListener('click', function(e) {
+                    if (this.classList.contains('gone')) return;
+                    var digit = this.getAttribute('data-digit');
+                    var clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    var clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    if (clientX === undefined) {
+                        clientX = window.innerWidth / 2;
+                        clientY = window.innerHeight / 2;
+                    }
+                    this.classList.add('gone');
+                    createPhysDigit(digit, clientX, clientY, this);
+                });
+            });
 
             // ============================================================
             // 彩色物理模式 (/?colourful)
@@ -420,29 +326,28 @@
             if (isColourfulMode()) {
                 document.body.classList.add('colourful');
 
-                // 1. 高频闪烁颜色
                 var colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4'];
                 function randomColor() {
                     return colorPalette[Math.floor(Math.random() * colorPalette.length)];
                 }
 
-                var flashInterval = setInterval(function() {
+                // 高频闪烁
+                setInterval(function() {
                     var bg = randomColor();
                     document.body.style.backgroundColor = bg;
-                    document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
+                    document.querySelectorAll('.digit, .sub-text, .footer-credit, .action-link').forEach(function(el) {
                         el.style.color = randomColor();
                     });
-                    document.querySelectorAll('.btn').forEach(function(el) {
+                    document.querySelectorAll('.phys-digit').forEach(function(el) {
                         el.style.color = randomColor();
-                        el.style.borderColor = randomColor();
                     });
                 }, 100);
 
-                // 2. 物理浮动效果（所有主要组件）
-                var elements = document.querySelectorAll('.main-title, .sub, .btn');
+                // 正弦浮动（静态元素）
+                var floatTargets = document.querySelectorAll('.digit, .sub-text, .footer-credit');
                 var physData = [];
-                elements.forEach(function(el) {
-                    var data = {
+                floatTargets.forEach(function(el) {
+                    physData.push({
                         el: el,
                         phaseX: Math.random() * Math.PI * 2,
                         phaseY: Math.random() * Math.PI * 2,
@@ -450,34 +355,38 @@
                         ampY: 4 + Math.random() * 12,
                         speedX: 0.6 + Math.random() * 1.8,
                         speedY: 0.6 + Math.random() * 1.8
-                    };
-                    physData.push(data);
+                    });
                 });
 
-                function animatePhysics() {
+                function animateFloat() {
                     var now = performance.now() / 1000;
                     physData.forEach(function(d) {
+                        if (d.el.classList && d.el.classList.contains('gone')) {
+                            d.el.style.transform = 'translate(0, 0)';
+                            return;
+                        }
                         var x = Math.sin(now * d.speedX + d.phaseX) * d.ampX;
                         var y = Math.cos(now * d.speedY + d.phaseY) * d.ampY;
                         d.el.style.transform = 'translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)';
                     });
-                    requestAnimationFrame(animatePhysics);
+                    requestAnimationFrame(animateFloat);
                 }
-                animatePhysics();
+                animateFloat();
 
-                // 3. 修改内部链接，使跳转保持 ?colourful（排除 GitHub 仓库）
-                var internalLinks = document.querySelectorAll('.btn:not(#btn6)');
-                internalLinks.forEach(function(link) {
-                    if (link.href && link.href !== '#' && !link.href.startsWith('javascript:')) {
-                        try {
-                            var url = new URL(link.href, window.location.origin);
-                            url.search = 'colourful'; // 覆盖现有查询参数（确保只有 colourf ul）
-                            link.href = url.toString();
-                        } catch(e) { /* 忽略无效URL */ }
-                    }
+                // 修改“返回首页”链接，跳转时带上 ?colourful
+                homeLink.onclick = function(e) {
+                    e.preventDefault();
+                    this.blur();
+                    window.location.href = 'https://woyaojava.github.io/?colourful';
+                };
+            } else {
+                // 普通模式下的点击行为
+                homeLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.blur();
+                    window.location.href = 'https://woyaojava.github.io';
                 });
             }
-
         })();
     </script>
 </body>
