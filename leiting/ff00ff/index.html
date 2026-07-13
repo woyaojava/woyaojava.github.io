@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>#FF00FF 一键生成器</title>
+    <title>#FF00FF 一键生成器 · 增强版</title>
     <script src="https://unpkg.com/@jaames/iro@5.5.2/dist/iro.min.js">
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
+    </script>
     <style>
-        /* ================= 终极去蓝框策略 ================= */
+        /* ================= 全局重置与变量 ================= */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -17,373 +21,805 @@
         }
         *:focus,
         *:focus-visible,
-        *:active,
-        *::-moz-focus-inner {
+        *:active {
             outline: none !important;
             box-shadow: none !important;
-            border: 0 none !important;
         }
-
         input,
         button,
         select,
-        textarea,
-        label {
+        textarea {
             outline: none !important;
-        }
-        input[type="range"]::-webkit-slider-thumb:focus {
-            outline: none !important;
-            box-shadow: none !important;
-        }
-        input[type="range"]::-moz-range-thumb:focus {
-            outline: none !important;
-            box-shadow: none !important;
         }
 
         :root {
             --accent-color: #FF00FF;
-            --text-color: #FFFFFF;
-            --bg-color: #1a1a1a;
-            --accent-dim: rgba(255, 0, 255, 0.3);
-            --accent-glow: rgba(255, 0, 255, 0.6);
+            --accent-rgb: 255, 0, 255;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0A0;
+            --bg-body: #0B0B0E;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border-glow: rgba(255, 0, 255, 0.25);
+            --shadow-glow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #111;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-body);
+            background-image: radial-gradient(ellipse at 50% 0%, #1a0a1a 0%, #0B0B0E 70%);
             color: #fff;
             display: flex;
             justify-content: center;
             padding: 40px 20px;
             min-height: 100vh;
-        }
-        .container {
-            background: var(--bg-color);
-            padding: 30px;
-            border-radius: 24px;
-            border: 1px solid var(--accent-dim);
-            box-shadow: 0 0 60px var(--accent-dim);
-            max-width: 950px;
-            width: 100%;
+            margin: 0;
+            line-height: 1.5;
         }
 
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-lg);
+            padding: 28px 30px;
+            box-shadow: var(--shadow-glow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        /* ================= 头部 ================= */
         .header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 28px;
+            position: relative;
         }
         .header h1 {
-            color: var(--text-color);
-            font-size: 30px;
+            font-size: 32px;
             font-weight: 800;
-            text-shadow: 0 0 20px var(--accent-glow);
-            transition: color 0.3s, text-shadow 0.3s;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(var(--accent-rgb), 0.3);
+            display: inline-block;
+            padding: 0 20px;
+        }
+        .header h1::after {
+            content: '✨';
+            -webkit-text-fill-color: initial;
+            margin-left: 10px;
+            font-size: 28px;
+        }
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 4px;
+            letter-spacing: 2px;
+            font-weight: 300;
         }
 
+        /* ================= 控制栏 ================= */
         .controls {
-            background: rgba(40, 40, 40, 0.4);
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             gap: 20px;
-        }
-        .control-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            align-items: center;
+            margin-bottom: 24px;
         }
 
-        input[type="file"] {
-            display: none;
-        }
-        .btn-upload {
-            background: #222;
-            color: #ddd;
-            border: 2px dashed #444;
-            padding: 10px 20px;
-            border-radius: 10px;
+        /* ---- 二合一上传区 ---- */
+        .drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-md);
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: rgba(255, 255, 255, 0.02);
             cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .drop-zone:hover {
+            border-color: var(--accent-color);
+            background: rgba(var(--accent-rgb), 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(var(--accent-rgb), 0.1);
+        }
+        .drop-zone.dragover {
+            border-color: var(--accent-color);
+            background: rgba(var(--accent-rgb), 0.1);
+            transform: scale(1.01);
+            box-shadow: 0 0 60px rgba(var(--accent-rgb), 0.15);
+            animation: pulse-drop 1s infinite;
+        }
+        @keyframes pulse-drop {
+            0%,
+            100% {
+                box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.1);
+            }
+            50% {
+                box-shadow: 0 0 80px rgba(var(--accent-rgb), 0.25);
+            }
+        }
+        .drop-zone .drop-icon {
+            font-size: 38px;
+            line-height: 1.2;
+            opacity: 0.7;
             transition: 0.3s;
         }
-        .btn-upload:hover {
+        .drop-zone:hover .drop-icon {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .drop-zone .drop-text {
+            color: #ddd;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .drop-zone .drop-hint {
+            color: #666;
+            font-size: 12px;
+        }
+        .drop-zone .drop-count {
+            color: var(--accent-color);
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 4px;
+            background: rgba(var(--accent-rgb), 0.15);
+            padding: 2px 16px;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* ---- 操作行 ---- */
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            padding: 4px 0;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(4px);
+            letter-spacing: 0.3px;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        .btn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), #b300b3);
+            color: #fff;
+            border: 1px solid rgba(var(--accent-rgb), 0.4);
+            box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.25);
+        }
+        .btn-primary:hover:not(:disabled) {
+            box-shadow: 0 8px 35px rgba(var(--accent-rgb), 0.45);
             border-color: var(--accent-color);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2d8f4e, #1f6b3a);
+            color: #fff;
+            border: 1px solid rgba(45, 143, 78, 0.4);
+            box-shadow: 0 4px 20px rgba(45, 143, 78, 0.25);
+        }
+        .btn-success:hover:not(:disabled) {
+            box-shadow: 0 8px 35px rgba(45, 143, 78, 0.5);
+        }
+
+        .btn-danger {
+            background: rgba(255, 50, 50, 0.15);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 50, 50, 0.2);
+        }
+        .btn-danger:hover:not(:disabled) {
+            background: rgba(255, 50, 50, 0.25);
+            border-color: #ff6b6b;
             color: #fff;
         }
 
-        .btn-download {
-            background: var(--accent-color);
-            color: var(--text-color);
-            border: none;
-            padding: 12px 28px;
-            font-size: 17px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 0 15px var(--accent-dim);
-            flex: 1;
-            min-width: 140px;
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .btn-download:hover:not(:disabled) {
-            transform: scale(1.02);
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
-        .btn-download:disabled {
-            background: #555;
-            box-shadow: none;
-            color: #aaa;
+        .btn-ghost:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
         }
 
+        /* 自定义下拉菜单 */
         .custom-select-wrap {
             position: relative;
             display: inline-block;
-            min-width: 120px;
+            min-width: 110px;
         }
         .custom-select-trigger {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #222;
-            padding: 8px 12px 8px 16px;
-            color: #fff;
-            border: 1px solid #333;
-            border-radius: 8px;
-            font-size: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 14px 8px 18px;
+            color: #ddd;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 60px;
+            font-size: 13px;
             cursor: pointer;
             transition: 0.3s;
+            min-width: 100px;
+            backdrop-filter: blur(4px);
         }
         .custom-select-trigger:hover {
             border-color: var(--accent-color);
+            color: #fff;
         }
         .custom-select-trigger svg {
             width: 14px;
             height: 14px;
             fill: #aaa;
             transition: 0.3s;
+            margin-left: 6px;
         }
         .custom-select-trigger.active svg {
             transform: rotate(180deg);
         }
-
         .custom-select-options {
             display: none;
             position: absolute;
-            top: calc(100% + 6px);
+            top: calc(100% + 8px);
             left: 0;
             right: 0;
-            background: #1f1f1f;
-            border: 1px solid #333;
-            border-radius: 8px;
+            background: #1a1a1f;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-sm);
             z-index: 20;
             max-height: 200px;
             overflow-y: auto;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            box-shadow: var(--shadow-glow);
+            backdrop-filter: blur(10px);
         }
         .custom-select-options.active {
             display: block;
         }
-
         .custom-option {
             padding: 10px 16px;
             cursor: pointer;
             transition: 0.15s;
-            color: #ddd;
-            font-size: 14px;
+            color: #ccc;
+            font-size: 13px;
         }
         .custom-option:hover {
-            background: var(--accent-dim);
-            color: #ffffff;
+            background: rgba(var(--accent-rgb), 0.15);
+            color: #fff;
         }
-        .custom-option:last-child {
-            border-radius: 0 0 8px 8px;
-        }
-        .custom-option:first-child {
-            border-radius: 8px 8px 0 0;
-        }
-        #formatSelect {
-            display: none;
+
+        /* ================= 颜色控制与预设 ================= */
+        .color-section {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
         .color-wrapper {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 16px;
             justify-content: center;
-            width: 100%;
         }
         .color-group {
-            background: #222;
-            padding: 15px;
-            border-radius: 12px;
             flex: 1;
-            min-width: 260px;
+            min-width: 200px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            align-items: center;
+            gap: 8px;
         }
         .color-group label {
-            font-size: 14px;
-            color: #ccc;
-            font-weight: bold;
-            width: 100%;
-            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
         .color-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            width: 100%;
         }
-
         .color-preview {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 2px solid #333;
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             flex-shrink: 0;
+            transition: 0.3s;
         }
-
         .input-wrap {
             position: relative;
             flex: 1;
         }
         .input-wrap input[type="text"] {
             width: 100%;
-            padding: 8px 10px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            background: #111;
+            padding: 8px 12px;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.4);
             color: #fff;
-            font-family: monospace;
-            font-size: 14px;
+            font-family: 'Monaco', monospace;
+            font-size: 13px;
+            transition: 0.3s;
+            letter-spacing: 0.5px;
         }
         .input-wrap input[type="text"]:focus {
             border-color: var(--accent-color);
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.15);
         }
-
         .btn-picker {
-            background: var(--accent-dim);
-            color: #ffffff;
-            border: 1px solid var(--accent-dim);
-            padding: 6px 12px;
-            border-radius: 6px;
+            background: rgba(var(--accent-rgb), 0.15);
+            color: #fff;
+            border: 1px solid rgba(var(--accent-rgb), 0.2);
+            padding: 6px 14px;
+            border-radius: 60px;
             cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s;
+            flex-shrink: 0;
         }
         .btn-picker:hover {
             background: var(--accent-color);
-            color: #ffffff;
-        }
-
-        .threshold-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            width: 100%;
-            border-top: 1px solid #333;
-            padding-top: 15px;
-        }
-        .threshold-row label {
-            font-size: 13px;
-            color: #aaa;
-            white-space: nowrap;
-        }
-        .threshold-row input[type="range"] {
-            flex: 1;
-            -webkit-appearance: none;
-            height: 5px;
-            background: #333;
-            border-radius: 3px;
-        }
-        .threshold-row input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--accent-color);
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .threshold-row span {
-            min-width: 30px;
-            color: #fff;
-            font-size: 14px;
-            text-align: right;
-        }
-        .btn-auto {
-            background: #333;
-            border: 1px solid #444;
-            color: #ddd;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .btn-auto:hover {
             border-color: var(--accent-color);
-            color: #ffffff;
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.3);
         }
 
+        /* ---- 颜色预设 ---- */
+        .preset-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            padding-top: 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .preset-section .preset-label {
+            font-size: 11px;
+            color: #666;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-right: 4px;
+        }
+        .preset-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+            background: #222;
+        }
+        .preset-btn:hover {
+            transform: scale(1.15);
+            border-color: #fff;
+            box-shadow: 0 0 25px rgba(var(--accent-rgb), 0.3);
+        }
+        .preset-btn .dot1,
+        .preset-btn .dot2 {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 0;
+        }
+        .preset-btn .dot1 {
+            left: 0;
+            border-radius: 50% 0 0 50%;
+        }
+        .preset-btn .dot2 {
+            right: 0;
+            border-radius: 0 50% 50% 0;
+        }
+        .preset-btn .preset-name {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: #555;
+            white-space: nowrap;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .preset-btn:hover .preset-name {
+            opacity: 1;
+            bottom: -20px;
+        }
+
+        /* ---- 全局阈值操作 ---- */
+        .threshold-global {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* ================= 进度条 ================= */
+        .progress-wrap {
+            display: none;
+            width: 100%;
+            margin-top: 6px;
+        }
+        .progress-wrap.active {
+            display: block;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-color), #ff66ff);
+            border-radius: 4px;
+            transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* ================= 预览区 ================= */
         .display-area {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
-            margin-top: 20px;
+            margin-bottom: 24px;
         }
         .img-box {
             flex: 1;
-            min-width: 280px;
-            background: #0d0d0d;
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid #222;
+            min-width: 260px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 300px;
+            min-height: 280px;
+            position: relative;
+            backdrop-filter: blur(4px);
+            transition: 0.3s;
         }
-        .img-box p {
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: #aaa;
-            width: 100%;
-            text-align: center;
+        .img-box:hover {
+            border-color: rgba(var(--accent-rgb), 0.15);
         }
-
+        .img-box .label-tag {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            font-size: 10px;
+            color: #888;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 3px 14px;
+            border-radius: 30px;
+            z-index: 2;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
         .img-box img,
         .img-box canvas {
             max-width: 100%;
             max-height: 400px;
-            width: 100% !important;
+            width: auto !important;
             height: auto !important;
-            border-radius: 6px;
+            border-radius: 8px;
+            display: block;
+            object-fit: contain;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            transition: 0.3s;
+        }
+        #canvasResult {
+            background: #0a0a0c;
+        }
+
+        /* 预览阈值滑块 */
+        .preview-threshold {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            justify-content: center;
+            margin-top: 14px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 60px;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .preview-threshold label {
+            font-size: 11px;
+            color: #888;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .preview-threshold input[type="range"] {
+            flex: 1;
+            min-width: 100px;
+            -webkit-appearance: none;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        .preview-threshold input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.4);
+        }
+        .preview-threshold span {
+            min-width: 30px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* ================= 批量列表 ================= */
+        .batch-section {
+            margin-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 20px;
+        }
+        .batch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .batch-header .title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ccc;
+        }
+        .batch-header .title span {
+            color: var(--accent-color);
+        }
+        .batch-header .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .grid-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 16px;
+            max-height: 520px;
+            overflow-y: auto;
+            padding: 4px 2px 8px 2px;
+        }
+
+        .grid-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            backdrop-filter: blur(4px);
+        }
+        .grid-item:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+        .grid-item.active {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.15), inset 0 0 30px rgba(var(--accent-rgb), 0.05);
+        }
+        .grid-item .thumb-wrap {
+            display: flex;
+            flex-direction: column;
+            background: #0a0a0c;
+        }
+        .grid-item .thumb-row {
+            display: flex;
+            height: 100px;
+        }
+        .grid-item .thumb-row>div {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #0a0a0c;
+            position: relative;
+        }
+        .grid-item .thumb-row .thumb-label {
+            position: absolute;
+            font-size: 8px;
+            color: #555;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0 8px;
+            border-radius: 10px;
+            top: 4px;
+            left: 6px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .grid-item .thumb-row img,
+        .grid-item .thumb-row canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             display: block;
         }
+        .grid-item .thumb-row .orig-col {
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .grid-item .thumb-row .proc-col {
+            border-left: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .grid-item .item-info {
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .grid-item .item-info .fname {
+            font-size: 11px;
+            color: #aaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70px;
+            font-weight: 500;
+        }
+        .grid-item .item-info .th-val {
+            font-size: 10px;
+            color: var(--accent-color);
+            background: rgba(var(--accent-rgb), 0.15);
+            padding: 1px 10px;
+            border-radius: 30px;
+            font-weight: 700;
+        }
+        .grid-item .item-info .status-icon {
+            font-size: 12px;
+        }
+        .grid-item .item-info .dl-single {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .grid-item .item-info .dl-single:hover {
+            border-color: var(--accent-color);
+            color: #fff;
+            background: rgba(var(--accent-rgb), 0.1);
+        }
+        .grid-item .item-info .btn-delete {
+            background: none;
+            border: none;
+            color: #555;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0 4px;
+            transition: 0.2s;
+            line-height: 1;
+        }
+        .grid-item .item-info .btn-delete:hover {
+            color: #ff6b6b;
+            transform: scale(1.2);
+        }
+        .grid-item .item-index {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #666;
+            font-size: 9px;
+            padding: 0 8px;
+            border-radius: 30px;
+            z-index: 3;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+        }
 
-        #canvasResult {
-            opacity: 0;
-            transform: scale(0.95);
-            filter: blur(6px);
-            transition: none;
+        .empty-batch {
+            color: #555;
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 14px;
+            border: 1px dashed rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-sm);
+            background: rgba(0, 0, 0, 0.2);
         }
-        #canvasResult.animated {
-            animation: fadeIn 0.5s forwards;
-        }
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.95);
-                filter: blur(6px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-                filter: blur(0px);
-            }
+        .empty-batch .icon {
+            font-size: 42px;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.5;
         }
 
+        /* ================= 取色器弹窗 ================= */
         #popupOverlay {
             position: fixed;
             top: 0;
@@ -391,144 +827,321 @@
             width: 100vw;
             height: 100vh;
             background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
             z-index: 9999;
             display: none;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(4px);
         }
         #popupBox {
-            background: var(--bg-color);
-            border: 1px solid var(--accent-color);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 0 40px var(--accent-dim);
-            width: 310px;
+            background: #141418;
+            border: 1px solid rgba(var(--accent-rgb), 0.3);
+            padding: 24px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 0 80px rgba(var(--accent-rgb), 0.15);
+            width: 320px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
         #popupBox h3 {
-            color: #ffffff;
-            font-weight: normal;
-            font-size: 15px;
+            color: #fff;
+            font-weight: 500;
+            font-size: 16px;
             letter-spacing: 0.5px;
+        }
+        .iro__box {
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+        }
+        .iro__slider {
+            border-radius: 30px !important;
+        }
+        .iro__handler {
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5) !important;
+            border: 2px solid #fff !important;
         }
         #popupBox .popup-input-row input[type="text"] {
             width: 100%;
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #444;
-            background: #0c0c0c;
-            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
             font-family: monospace;
             text-align: center;
             font-size: 14px;
+            letter-spacing: 1px;
         }
         #popupBox .popup-input-row input[type="text"]:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 10px var(--accent-dim);
         }
 
-        .iro__box {
-            border: 1px solid #444 !important;
-        }
-        .iro__slider {
-            width: 180px !important;
-            height: 12px !important;
-            border-radius: 6px !important;
-        }
-        .iro__handler {
-            box-shadow: 0 0 10px var(--accent-dim) !important;
-            border-color: #fff !important;
-        }
-
-        .popup-input-row {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* ================= 确认弹窗 ================= */
+        #confirmOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: none;
             justify-content: center;
-            margin-top: 5px;
+            align-items: center;
         }
-        .popup-input-row .input-wrap {
+        #confirmBox {
+            background: #18181c;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 28px 32px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+            width: 360px;
+            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #confirmBox .confirm-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+        #confirmBox .confirm-message {
+            font-size: 14px;
+            color: #aaa;
+            text-align: center;
+            line-height: 1.6;
+        }
+        #confirmBox .confirm-actions {
+            display: flex;
+            gap: 16px;
             width: 100%;
+            justify-content: center;
+        }
+        #confirmBox .confirm-actions button {
+            padding: 10px 36px;
+            border-radius: 60px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+            min-width: 80px;
+        }
+        #confirmBox .confirm-actions .btn-confirm-yes {
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.3);
+        }
+        #confirmBox .confirm-actions .btn-confirm-yes:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 35px rgba(var(--accent-rgb), 0.5);
+        }
+        #confirmBox .confirm-actions .btn-confirm-no {
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaa;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        #confirmBox .confirm-actions .btn-confirm-no:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* ================= 响应式 ================= */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+                border-radius: 18px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .drop-zone {
+                padding: 20px 14px;
+            }
+            .color-group {
+                min-width: 140px;
+            }
+            .grid-list {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 10px;
+                max-height: 400px;
+            }
+            .grid-item .thumb-row {
+                height: 75px;
+            }
+            .img-box {
+                min-height: 200px;
+                min-width: 200px;
+            }
+            .img-box img,
+            .img-box canvas {
+                max-height: 250px;
+            }
+            .action-row .btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            .preset-btn {
+                width: 30px;
+                height: 30px;
+            }
+        }
+        @media (max-width: 400px) {
+            .grid-list {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            .grid-item .thumb-row {
+                height: 60px;
+            }
+            .grid-item .item-info .fname {
+                max-width: 40px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- 头部 -->
         <div class="header">
-            <h1 id="titleElem">#FF00FF 一键生成器</h1>
+            <h1>#FF00FF 生成器</h1>
+            <div class="subtitle">双色阈值 · 独立控制 · 批量处理</div>
         </div>
 
+        <!-- 控制栏 -->
         <div class="controls">
-            <div class="control-row">
-                <label class="btn-upload" for="fileInput">📁 选择图片</label>
-                <input type="file" id="fileInput" accept="image/*">
-                <button class="btn-download" id="downloadBtn" disabled>⬇️ 下载图片</button>
+            <!-- 上传区 -->
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-icon">📤</div>
+                <div class="drop-text">点击或拖放图片到此处</div>
+                <div class="drop-hint">支持 JPG / PNG / WebP / GIF，可多张上传</div>
+                <div class="drop-count" id="dropCount">已上传 0 张</div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" multiple>
 
+            <!-- 操作行 -->
+            <div class="action-row">
+                <button class="btn btn-success" id="batchDownloadBtn" disabled>⬇️ 批量下载</button>
+                <button class="btn btn-danger" id="clearAllBtn">🗑️ 清空</button>
+
+                <div class="custom-select-wrap" id="customSelectWrap">
+                    <div class="custom-select-trigger" id="selectTrigger">
+                        <span id="selectDisplayText">原格式</span>
+                        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                    </div>
+                    <div class="custom-select-options" id="selectOptions"></div>
+                </div>
                 <select id="formatSelect">
                     <option value="original">原格式</option>
                     <option value="png">PNG</option>
                     <option value="jpeg">JPG</option>
                     <option value="webp">WebP</option>
-                    <option value="svg">SVG (矢量)</option>
                 </select>
+            </div>
 
-                <div class="custom-select-wrap" id="customSelectWrap">
-                    <div class="custom-select-trigger" id="selectTrigger">
-                        <span id="selectDisplayText">原格式</span>
-                        <svg viewBox="0 0 24 24">
-                            <path d="M7 10l5 5 5-5z" />
-                        </svg>
+            <!-- 颜色与预设 -->
+            <div class="color-section">
+                <div class="color-wrapper">
+                    <div class="color-group">
+                        <label>🎨 亮部颜色</label>
+                        <div class="color-row">
+                            <div class="color-preview" id="preview1" style="background:#FF00FF;"></div>
+                            <div class="input-wrap">
+                                <input type="text" id="hex1" value="#FF00FF" maxlength="7">
+                            </div>
+                            <button class="btn-picker" onclick="openPicker(1)">取色</button>
+                        </div>
                     </div>
-                    <div class="custom-select-options" id="selectOptions"></div>
+                    <div class="color-group">
+                        <label>🌑 暗部颜色</label>
+                        <div class="color-row">
+                            <div class="color-preview" id="preview2" style="background:#000000;"></div>
+                            <div class="input-wrap">
+                                <input type="text" id="hex2" value="#000000" maxlength="7">
+                            </div>
+                            <button class="btn-picker" onclick="openPicker(2)">取色</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 预设色板 -->
+                <div class="preset-section">
+                    <span class="preset-label">预设配色</span>
+                    <button class="preset-btn" data-c1="#FF00FF" data-c2="#00FFFF" title="赛博朋克">
+                        <span class="dot1" style="background:#FF00FF;"></span><span class="dot2" style="background:#00FFFF;"></span>
+                        <span class="preset-name">赛博</span>
+                    </button>
+                    <button class="preset-btn" data-c1="#FF7F00" data-c2="#2B2B2B" title="复古橙">
+                        <span class="dot1" style="background:#FF7F00;"></span><span class="dot2" style="background:#2B2B2B;"></span>
+                        <span class="preset-name">复古</span>
+                    </button>
+                    <button class="preset-btn" data-c1="#FFFFFF" data-c2="#000000" title="黑白">
+                        <span class="dot1" style="background:#FFFFFF;"></span><span class="dot2" style="background:#000000;"></span>
+                        <span class="preset-name">黑白</span>
+                    </button>
+                    <button class="preset-btn" data-c1="#39FF14" data-c2="#111111" title="霓虹绿">
+                        <span class="dot1" style="background:#39FF14;"></span><span class="dot2" style="background:#111111;"></span>
+                        <span class="preset-name">霓虹</span>
+                    </button>
+                    <button class="preset-btn" data-c1="#FF0055" data-c2="#00FFAA" title="红蓝">
+                        <span class="dot1" style="background:#FF0055;"></span><span class="dot2" style="background:#00FFAA;"></span>
+                        <span class="preset-name">红蓝</span>
+                    </button>
+                </div>
+
+                <!-- 全局阈值操作 -->
+                <div class="threshold-global">
+                    <button class="btn btn-ghost" id="autoAllBtn">⚡ 全部自动匹配</button>
+                    <button class="btn btn-ghost" id="resetThresholdsBtn">↺ 重置阈值为127</button>
+                    <span style="color:#555; font-size:11px;">每张图片独立阈值</span>
                 </div>
             </div>
 
-            <div class="color-wrapper">
-                <div class="color-group">
-                    <label>颜色一 (亮部)</label>
-                    <div class="color-row">
-                        <div class="color-preview" id="preview1" style="background:#FF00FF;"></div>
-                        <div class="input-wrap">
-                            <input type="text" id="hex1" value="#FF00FF" maxlength="7">
-                        </div>
-                        <button class="btn-picker" onclick="openPicker(1)">取色</button>
-                    </div>
-                </div>
-
-                <div class="color-group">
-                    <label>颜色二 (暗部)</label>
-                    <div class="color-row">
-                        <div class="color-preview" id="preview2" style="background:#000000;"></div>
-                        <div class="input-wrap">
-                            <input type="text" id="hex2" value="#000000" maxlength="7">
-                        </div>
-                        <button class="btn-picker" onclick="openPicker(2)">取色</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="threshold-row">
-                <label>阈值</label>
-                <input type="range" id="threshold" min="0" max="255" value="127">
-                <span id="thresholdVal">127</span>
-                <button class="btn-auto" id="autoThresholdBtn">自动匹配</button>
+            <!-- 进度 -->
+            <div class="progress-wrap" id="progressWrap">
+                <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+                <div class="progress-text" id="progressText">处理中 0%</div>
             </div>
         </div>
 
+        <!-- 预览区 -->
         <div class="display-area">
             <div class="img-box">
-                <p>📷 原始照片</p>
-                <img id="originalImg" style="display:none;">
-                <div id="placeholder" style="min-height:180px; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px;">等待上传...</div>
+                <span class="label-tag">📷 原始</span>
+                <img id="previewOriginal" style="display:none; width:100%;">
+                <div id="placeholderBig" style="min-height:160px; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px; width:100%;">选择图片预览</div>
             </div>
             <div class="img-box">
-                <p>🎨 生成效果</p>
-                <canvas id="canvasResult" style="background:#0c0c0c;"></canvas>
+                <span class="label-tag">✨ 效果</span>
+                <canvas id="canvasResult" style="background:#0c0c0c; width:100%;"></canvas>
+                <div class="preview-threshold" id="singleThresholdPanel">
+                    <label>🎯 阈值</label>
+                    <input type="range" id="singleThreshold" min="0" max="255" value="127">
+                    <span id="singleThresholdVal">127</span>
+                    <button class="btn btn-ghost" id="autoSingleBtn" style="padding:4px 14px; font-size:11px;">自动</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量列表 -->
+        <div class="batch-section">
+            <div class="batch-header">
+                <div class="title">📋 图片列表 <span id="listCount">(0)</span></div>
+                <div class="actions">
+                    <button class="btn btn-primary" id="singleDownloadBtn" disabled style="min-width:100px; font-size:13px; padding:6px 18px;">
+                        ⬇️ 下载当前
+                    </button>
+                </div>
+            </div>
+            <div id="gridContainer">
+                <div class="empty-batch">
+                    <span class="icon">🖼️</span>
+                    上传图片开始创作，每张图片可独立调整阈值
+                </div>
             </div>
         </div>
     </div>
@@ -536,7 +1149,7 @@
     <!-- 取色器弹窗 -->
     <div id="popupOverlay" onclick="closePicker()">
         <div id="popupBox" onclick="event.stopPropagation()">
-            <h3 id="pickerTargetLabel">选择颜色一</h3>
+            <h3 id="pickerTargetLabel">选择颜色</h3>
             <div id="pickerContainer"></div>
             <div class="popup-input-row">
                 <div class="input-wrap">
@@ -546,92 +1159,76 @@
         </div>
     </div>
 
+    <!-- 确认弹窗 -->
+    <div id="confirmOverlay">
+        <div id="confirmBox" onclick="event.stopPropagation()">
+            <div class="confirm-title" id="confirmTitle">⚠️ 确认</div>
+            <div class="confirm-message" id="confirmMessage">确定执行？</div>
+            <div class="confirm-actions">
+                <button class="btn-confirm-yes" id="confirmYesBtn">确认</button>
+                <button class="btn-confirm-no" id="confirmNoBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // DOM 元素
+        // ============================================================
+        //  全局状态
+        // ============================================================
+        var imageItems = [];
+        var nextId = 0;
+        var selectedIndex = -1;
+        var isProcessing = false;
+
+        // DOM 引用
         var fileInput = document.getElementById('fileInput');
-        var downloadBtn = document.getElementById('downloadBtn');
-        var originalImg = document.getElementById('originalImg');
+        var previewOriginal = document.getElementById('previewOriginal');
         var canvas = document.getElementById('canvasResult');
         var ctx = canvas.getContext('2d');
-        var placeholder = document.getElementById('placeholder');
+        var placeholderBig = document.getElementById('placeholderBig');
         var hex1 = document.getElementById('hex1');
         var hex2 = document.getElementById('hex2');
         var preview1 = document.getElementById('preview1');
         var preview2 = document.getElementById('preview2');
-        var thresholdSlider = document.getElementById('threshold');
-        var thresholdVal = document.getElementById('thresholdVal');
-        var autoThresholdBtn = document.getElementById('autoThresholdBtn');
+        var singleThreshold = document.getElementById('singleThreshold');
+        var singleThresholdVal = document.getElementById('singleThresholdVal');
+        var autoSingleBtn = document.getElementById('autoSingleBtn');
+        var autoAllBtn = document.getElementById('autoAllBtn');
+        var resetThresholdsBtn = document.getElementById('resetThresholdsBtn');
         var popupOverlay = document.getElementById('popupOverlay');
         var popupHex = document.getElementById('popupHex');
         var pickerTargetLabel = document.getElementById('pickerTargetLabel');
-        var titleElem = document.getElementById('titleElem');
-
+        var titleElem = document.querySelector('.header h1');
+        var countBadge = document.getElementById('countBadge');
+        var listCount = document.getElementById('listCount');
+        var gridContainer = document.getElementById('gridContainer');
+        var batchDownloadBtn = document.getElementById('batchDownloadBtn');
+        var singleDownloadBtn = document.getElementById('singleDownloadBtn');
+        var clearAllBtn = document.getElementById('clearAllBtn');
         var formatSelect = document.getElementById('formatSelect');
         var selectTrigger = document.getElementById('selectTrigger');
         var selectOptions = document.getElementById('selectOptions');
         var selectDisplayText = document.getElementById('selectDisplayText');
+        var progressWrap = document.getElementById('progressWrap');
+        var progressFill = document.getElementById('progressFill');
+        var progressText = document.getElementById('progressText');
+        var confirmOverlay = document.getElementById('confirmOverlay');
+        var confirmTitle = document.getElementById('confirmTitle');
+        var confirmMessage = document.getElementById('confirmMessage');
+        var confirmYesBtn = document.getElementById('confirmYesBtn');
+        var confirmNoBtn = document.getElementById('confirmNoBtn');
+        var dropZone = document.getElementById('dropZone');
+        var dropCount = document.getElementById('dropCount');
 
-        var originalLoaded = false;
-        var pendingRender = false;
-        var colorTarget = 1; // 当前取色器目标：1=颜色一，2=颜色二
-        var uploadedFileType = 'image/png';
-        var uploadedFileExt = 'png';
+        var colorTarget = 1;
+        var confirmCallback = null;
 
-        // ========== 下拉菜单（无改动） ==========
-        (function initCustomSelect() {
-            var options = formatSelect.options;
-            for (var i = 0; i < options.length; i++) {
-                var opt = options[i];
-                var div = document.createElement('div');
-                div.className = 'custom-option';
-                div.innerText = opt.text;
-                div.dataset.value = opt.value;
-                div.dataset.index = i;
-                selectOptions.appendChild(div);
-            }
-            selectTrigger.addEventListener('click', function(e) {
-                e.stopPropagation();
-                var isOpen = selectOptions.classList.contains('active');
-                closeAllSelects();
-                if (!isOpen) {
-                    selectOptions.classList.add('active');
-                    selectTrigger.classList.add('active');
-                }
-            });
-            selectOptions.addEventListener('click', function(e) {
-                var target = e.target;
-                if (target.classList.contains('custom-option')) {
-                    var val = target.dataset.value;
-                    var text = target.innerText;
-                    formatSelect.value = val;
-                    selectDisplayText.innerText = text;
-                    selectOptions.classList.remove('active');
-                    selectTrigger.classList.remove('active');
-                    var evt = document.createEvent('HTMLEvents');
-                    evt.initEvent('change', true, false);
-                    formatSelect.dispatchEvent(evt);
-                }
-            });
-            document.addEventListener('click', function(e) {
-                if (!document.getElementById('customSelectWrap').contains(e.target)) {
-                    selectOptions.classList.remove('active');
-                    selectTrigger.classList.remove('active');
-                }
-            });
-            var defaultText = formatSelect.options[formatSelect.selectedIndex].text;
-            selectDisplayText.innerText = defaultText;
-        })();
-
-        function closeAllSelects() {
-            selectOptions.classList.remove('active');
-            selectTrigger.classList.remove('active');
-        }
-
-        // ========== 工具函数 ==========
+        // ============================================================
+        //  工具函数
+        // ============================================================
         function hexToRgb(hex) {
-            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 255,
-                g: 0, b: 255 };
+            var r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 255, g: 0, b: 255 };
         }
 
         function getContrastColor(hex) {
@@ -640,200 +1237,43 @@
             return brightness > 150 ? '#111111' : '#FFFFFF';
         }
 
-        // 更新全局主题色（CSS变量）和标题
         function updateTheme(hex) {
             if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
             var root = document.documentElement;
-            var dim = hex + '4D';
-            var glow = hex + '99';
-            var textColor = getContrastColor(hex);
+            var dim = hex + '4D',
+                glow = hex + '99';
             root.style.setProperty('--accent-color', hex);
-            root.style.setProperty('--text-color', textColor);
-            root.style.setProperty('--accent-dim', dim);
-            root.style.setProperty('--accent-glow', glow);
-            titleElem.textContent = hex + ' 一键生成器';
+            root.style.setProperty('--accent-rgb', hexToRgb(hex).r + ', ' + hexToRgb(hex).g + ', ' + hexToRgb(hex).b);
+            root.style.setProperty('--text-primary', getContrastColor(hex));
+            root.style.setProperty('--border-glow', dim);
+            // Update title gradient
+            titleElem.style.background = 'linear-gradient(135deg, #fff 0%, ' + hex + ' 100%)';
+            titleElem.style.webkitBackgroundClip = 'text';
+            titleElem.style.webkitTextFillColor = 'transparent';
+            titleElem.style.backgroundClip = 'text';
         }
 
-        // ========== 统一的颜色更新函数 ==========
-        // 更新颜色一（亮部）: 同步输入框、预览、主题、取色器
-        function updateColorOne(hex) {
-            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
-            hex1.value = hex;
-            preview1.style.backgroundColor = hex;
-            updateTheme(hex);
-            // 同步取色器（如果取色器存在且颜色目标为1，避免冲突）
-            if (picker && colorTarget === 1) {
-                picker.color.set(hex);
-            }
-            if (originalLoaded) triggerRender(false);
-        }
-
-        // 更新颜色二（暗部）: 同步输入框、预览、取色器
-        function updateColorTwo(hex) {
-            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
-            hex2.value = hex;
-            preview2.style.backgroundColor = hex;
-            if (picker && colorTarget === 2) {
-                picker.color.set(hex);
-            }
-            if (originalLoaded) triggerRender(false);
-        }
-
-        // 格式化并验证颜色字符串，返回规范的大写形式或 null
         function validateHex(input) {
             var val = input.trim().toUpperCase();
             if (val === '') return null;
-            // 去掉可能的 # 前缀
             if (val.charAt(0) === '#') val = val.substring(1);
-            if (/^[0-9A-F]{6}$/.test(val)) {
-                return '#' + val;
-            }
+            if (/^[0-9A-F]{6}$/.test(val)) return '#' + val;
             return null;
         }
 
-        // ========== 输入框事件绑定 ==========
-        function setupInput(input, isColorOne) {
-            // 输入时实时过滤并尝试更新
-            input.addEventListener('input', function() {
-                var raw = this.value;
-                // 过滤非法字符
-                raw = raw.replace(/[^0-9a-fA-F#]/g, '');
-                if (raw.length > 7) raw = raw.substring(0, 7);
-                this.value = raw;
-
-                var hex = validateHex(raw);
-                if (hex) {
-                    if (isColorOne) {
-                        updateColorOne(hex);
-                    } else {
-                        updateColorTwo(hex);
-                    }
-                    // 同步弹窗输入框（如果当前弹窗打开且目标匹配）
-                    if (popupOverlay.style.display === 'flex') {
-                        if ((isColorOne && colorTarget === 1) || (!isColorOne && colorTarget === 2)) {
-                            popupHex.value = hex;
-                        }
-                    }
-                }
-            });
-
-            // 失焦或回车时强制校正
-            input.addEventListener('blur', function() {
-                var raw = this.value.trim();
-                var hex = validateHex(raw);
-                if (!hex) {
-                    // 无效则回退默认
-                    hex = isColorOne ? '#FF00FF' : '#000000';
-                    this.value = hex;
-                    if (isColorOne) {
-                        updateColorOne(hex);
-                    } else {
-                        updateColorTwo(hex);
-                    }
-                } else {
-                    this.value = hex;
-                    if (isColorOne) {
-                        updateColorOne(hex);
-                    } else {
-                        updateColorTwo(hex);
-                    }
-                }
-            });
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') this.blur();
-            });
+        function formatDate() {
+            var d = new Date();
+            var pad = function(n) { return String(n).padStart(2, '0'); };
+            return d.getFullYear() + '_' + pad(d.getMonth() + 1) + '_' + pad(d.getDate()) +
+                '_' + pad(d.getHours()) + '_' + pad(d.getMinutes()) + '_' + pad(d.getSeconds());
         }
 
-        // 初始化主页两个输入框
-        setupInput(hex1, true);
-        setupInput(hex2, false);
-
-        // ========== 取色器弹窗输入框 ==========
-        // 弹窗输入框同样绑定，但更新时需根据 colorTarget 调用对应更新函数
-        popupHex.addEventListener('input', function() {
-            var raw = this.value;
-            raw = raw.replace(/[^0-9a-fA-F#]/g, '');
-            if (raw.length > 7) raw = raw.substring(0, 7);
-            this.value = raw;
-            var hex = validateHex(raw);
-            if (hex) {
-                if (colorTarget === 1) {
-                    updateColorOne(hex);
-                } else {
-                    updateColorTwo(hex);
-                }
-            }
-        });
-        popupHex.addEventListener('blur', function() {
-            var raw = this.value.trim();
-            var hex = validateHex(raw);
-            if (!hex) {
-                hex = (colorTarget === 1) ? '#FF00FF' : '#000000';
-                this.value = hex;
-            }
-            if (colorTarget === 1) {
-                updateColorOne(hex);
-            } else {
-                updateColorTwo(hex);
-            }
-        });
-        popupHex.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') this.blur();
-        });
-
-        // ========== 取色器 (iro) ==========
-        var picker = new iro.ColorPicker("#pickerContainer", {
-            width: 180,
-            color: "#FF00FF",
-            layout: [
-                { component: iro.ui.Box, options: { boxHeight: 110 } },
-                { component: iro.ui.Slider, options: { sliderType: 'hue', width: 180 } }
-            ]
-        });
-
-        picker.on('color:change', function(color) {
-            var hex = color.hexString;
-            popupHex.value = hex;
-            if (colorTarget === 1) {
-                updateColorOne(hex);
-            } else {
-                updateColorTwo(hex);
-            }
-        });
-
-        // ========== 打开/关闭取色器弹窗 ==========
-        function openPicker(target) {
-            colorTarget = target;
-            var currentHex = (target === 1) ? hex1.value : hex2.value;
-            picker.color.set(currentHex);
-            popupHex.value = currentHex;
-            pickerTargetLabel.innerText = (target === 1) ? '选择颜色一 (亮部)' : '选择颜色二 (暗部)';
-            popupOverlay.style.display = 'flex';
+        function getFileExtension(mimeType) {
+            var map = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif', 'image/bmp': 'bmp',
+                'image/svg+xml': 'svg' };
+            return map[mimeType] || 'png';
         }
 
-        function closePicker() {
-            // 触发弹窗输入框失焦，确保颜色被确认
-            popupHex.blur();
-            popupOverlay.style.display = 'none';
-            // 同时让主页输入框失焦以显示最新值
-            if (colorTarget === 1) hex1.blur();
-            else hex2.blur();
-        }
-
-        // 点击遮罩关闭
-        popupOverlay.addEventListener('click', function(e) {
-            if (e.target === popupOverlay) {
-                closePicker();
-            }
-        });
-
-        // ========== 阈值滑块 ==========
-        thresholdSlider.addEventListener('input', function() {
-            thresholdVal.textContent = this.value;
-            if (originalLoaded) triggerRender(false);
-        });
-
-        // ========== 自动阈值 ==========
         function calcOtsu(data, w, h) {
             var hist = new Array(256).fill(0);
             var total = w * h;
@@ -863,190 +1303,901 @@
             return bestT;
         }
 
-        autoThresholdBtn.addEventListener('click', function() {
-            if (!originalLoaded) return;
-            ctx.drawImage(originalImg, 0, 0);
-            var tmpData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-            var t = calcOtsu(tmpData, canvas.width, canvas.height);
-            thresholdSlider.value = t;
-            thresholdVal.textContent = t;
-            triggerRender(true);
-        });
+        // ============================================================
+        //  颜色更新
+        // ============================================================
+        function updateColorOne(hex) {
+            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+            hex1.value = hex;
+            preview1.style.backgroundColor = hex;
+            updateTheme(hex);
+            if (window._picker && colorTarget === 1) window._picker.color.set(hex);
+            if (imageItems.length > 0 && !isProcessing) reprocessAll();
+        }
 
-        // ========== 图片上传 ==========
-        fileInput.addEventListener('change', function(e) {
-            var file = e.target.files[0];
-            if (!file) return;
-            uploadedFileType = file.type || 'image/png';
-            var originalName = file.name || 'image.png';
-            uploadedFileExt = originalName.split('.').pop() || 'png';
-            if (uploadedFileExt === 'jpg') uploadedFileExt = 'jpeg';
+        function updateColorTwo(hex) {
+            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+            hex2.value = hex;
+            preview2.style.backgroundColor = hex;
+            if (window._picker && colorTarget === 2) window._picker.color.set(hex);
+            if (imageItems.length > 0 && !isProcessing) reprocessAll();
+        }
 
-            var reader = new FileReader();
-            reader.onload = function(event) {
-                originalImg.onload = function() {
-                    originalLoaded = true;
-                    placeholder.style.display = 'none';
-                    originalImg.style.display = 'block';
-                    var w = originalImg.naturalWidth || originalImg.width;
-                    var h = originalImg.naturalHeight || originalImg.height;
-                    if (w === 0 || h === 0) {
-                        w = originalImg.clientWidth || 1;
-                        h = originalImg.clientHeight || 1;
+        function setupInput(input, isColorOne) {
+            input.addEventListener('input', function() {
+                var raw = this.value.replace(/[^0-9a-fA-F#]/g, '');
+                if (raw.length > 7) raw = raw.substring(0, 7);
+                this.value = raw;
+                var hex = validateHex(raw);
+                if (hex) {
+                    if (isColorOne) updateColorOne(hex);
+                    else updateColorTwo(hex);
+                    if (popupOverlay.style.display === 'flex') {
+                        if ((isColorOne && colorTarget === 1) || (!isColorOne && colorTarget === 2)) {
+                            popupHex.value = hex;
+                        }
                     }
-                    canvas.width = w;
-                    canvas.height = h;
-                    downloadBtn.disabled = false;
-                    triggerRender(false);
-                };
-                originalImg.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // ========== 图像处理 ==========
-        function triggerRender(animate) {
-            if (pendingRender) return;
-            pendingRender = true;
-            requestAnimationFrame(function() {
-                pendingRender = false;
-                processImage(animate);
+                }
             });
-        }
-
-        function processImage(animate) {
-            ctx.drawImage(originalImg, 0, 0);
-            var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            var data = imgData.data;
-            var c1 = hexToRgb(hex1.value);
-            var c2 = hexToRgb(hex2.value);
-            var th = parseInt(thresholdSlider.value);
-
-            for (var i = 0; i < data.length; i += 4) {
-                var gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-                if (gray >= th) {
-                    data[i] = c1.r;
-                    data[i + 1] = c1.g;
-                    data[i + 2] = c1.b;
+            input.addEventListener('blur', function() {
+                var raw = this.value.trim();
+                var hex = validateHex(raw);
+                if (!hex) {
+                    hex = isColorOne ? '#FF00FF' : '#000000';
+                    this.value = hex;
+                    if (isColorOne) updateColorOne(hex);
+                    else updateColorTwo(hex);
                 } else {
-                    data[i] = c2.r;
-                    data[i + 1] = c2.g;
-                    data[i + 2] = c2.b;
+                    this.value = hex;
+                    if (isColorOne) updateColorOne(hex);
+                    else updateColorTwo(hex);
                 }
-            }
-            ctx.putImageData(imgData, 0, 0);
-
-            canvas.classList.remove('animated');
-            if (animate) {
-                void canvas.offsetWidth;
-                canvas.classList.add('animated');
-            } else {
-                canvas.style.opacity = 1;
-                canvas.style.transform = 'scale(1)';
-                canvas.style.filter = 'blur(0px)';
-            }
+            });
+            input.addEventListener('keydown', function(e) { if (e.key === 'Enter') this.blur(); });
         }
+        setupInput(hex1, true);
+        setupInput(hex2, false);
 
-        // ========== 下载 ==========
-        function formatDate() {
-            var now = new Date();
-            var y = now.getFullYear();
-            var m = String(now.getMonth() + 1);
-            if (m.length === 1) m = '0' + m;
-            var d = String(now.getDate());
-            if (d.length === 1) d = '0' + d;
-            var h = String(now.getHours());
-            if (h.length === 1) h = '0' + h;
-            var min = String(now.getMinutes());
-            if (min.length === 1) min = '0' + min;
-            var s = String(now.getSeconds());
-            if (s.length === 1) s = '0' + s;
-            return y + '_' + m + '_' + d + '_' + h + '_' + min + '_' + s;
-        }
-
-        downloadBtn.addEventListener('click', function() {
-            if (!originalLoaded) return;
-            downloadBtn.textContent = '⏳ 保存中...';
-            downloadBtn.disabled = true;
-
-            setTimeout(function() {
-                processImage(true);
-                var fmt = formatSelect.value;
-                var w = canvas.width;
-                var h = canvas.height;
-
-                function resetBtn() {
-                    downloadBtn.textContent = '⬇️ 下载图片';
-                    downloadBtn.disabled = false;
-                }
-
-                if (fmt === 'svg') {
-                    try {
-                        var pngDataUrl = canvas.toDataURL('image/png');
-                        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h +
-                            '" viewBox="0 0 ' + w + ' ' + h +
-                            '"><image href="' + pngDataUrl + '" width="' + w + '" height="' + h + '" /></svg>';
-                        var blob = new Blob([svg], { type: 'image/svg+xml' });
-                        var link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = formatDate() + '.svg';
-                        link.click();
-                        resetBtn();
-                        return;
-                    } catch (e) {
-                        fallbackDownload();
-                        return;
-                    }
-                }
-
-                var mime, ext;
-                if (fmt === 'original') {
-                    mime = uploadedFileType;
-                    ext = uploadedFileExt;
-                    if (mime === 'image/jpeg') ext = 'jpg';
-                    if (mime === 'image/svg+xml') ext = 'svg';
-                } else {
-                    mime = 'image/' + fmt;
-                    ext = fmt;
-                }
-                var quality = (mime === 'image/jpeg' || mime === 'image/webp') ? 0.92 : undefined;
-                var fileName = formatDate() + '.' + ext;
-
-                function fallbackDownload() {
-                    var link = document.createElement('a');
-                    link.href = canvas.toDataURL('image/png');
-                    link.download = formatDate() + '.png';
-                    link.click();
-                    resetBtn();
-                }
-
-                try {
-                    var blobFunc = canvas.toBlob || canvas.msToBlob;
-                    if (typeof blobFunc === 'function') {
-                        blobFunc.call(canvas, function(blob) {
-                            if (!blob || blob.size === 0) {
-                                fallbackDownload();
-                                return;
-                            }
-                            var link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = fileName;
-                            link.click();
-                            resetBtn();
-                        }, mime, quality);
-                    } else {
-                        fallbackDownload();
-                    }
-                } catch (e) {
-                    fallbackDownload();
-                }
-            }, 500);
+        // 预设颜色
+        document.querySelectorAll('.preset-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var c1 = this.dataset.c1;
+                var c2 = this.dataset.c2;
+                if (c1) updateColorOne(c1);
+                if (c2) updateColorTwo(c2);
+            });
         });
 
-        // ========== 初始化 ==========
-        // 以颜色一初始值更新全部
+        // ============================================================
+        //  取色器
+        // ============================================================
+        var picker = new iro.ColorPicker("#pickerContainer", {
+            width: 180,
+            color: "#FF00FF",
+            layout: [
+                { component: iro.ui.Box, options: { boxHeight: 110 } },
+                { component: iro.ui.Slider, options: { sliderType: 'hue', width: 180 } }
+            ]
+        });
+        window._picker = picker;
+
+        picker.on('color:change', function(color) {
+            var hex = color.hexString;
+            popupHex.value = hex;
+            if (colorTarget === 1) updateColorOne(hex);
+            else updateColorTwo(hex);
+        });
+
+        function openPicker(target) {
+            colorTarget = target;
+            var currentHex = (target === 1) ? hex1.value : hex2.value;
+            picker.color.set(currentHex);
+            popupHex.value = currentHex;
+            pickerTargetLabel.innerText = (target === 1) ? '亮部颜色' : '暗部颜色';
+            popupOverlay.style.display = 'flex';
+        }
+
+        function closePicker() {
+            popupHex.blur();
+            popupOverlay.style.display = 'none';
+            if (colorTarget === 1) hex1.blur();
+            else hex2.blur();
+        }
+        popupOverlay.addEventListener('click', function(e) {
+            if (e.target === popupOverlay) closePicker();
+        });
+
+        popupHex.addEventListener('input', function() {
+            var raw = this.value.replace(/[^0-9a-fA-F#]/g, '');
+            if (raw.length > 7) raw = raw.substring(0, 7);
+            this.value = raw;
+            var hex = validateHex(raw);
+            if (hex) {
+                if (colorTarget === 1) updateColorOne(hex);
+                else updateColorTwo(hex);
+            }
+        });
+        popupHex.addEventListener('blur', function() {
+            var raw = this.value.trim();
+            var hex = validateHex(raw);
+            if (!hex) {
+                hex = (colorTarget === 1) ? '#FF00FF' : '#000000';
+                this.value = hex;
+            }
+            if (colorTarget === 1) updateColorOne(hex);
+            else updateColorTwo(hex);
+        });
+        popupHex.addEventListener('keydown', function(e) { if (e.key === 'Enter') this.blur(); });
+
+        // ============================================================
+        //  图片处理
+        // ============================================================
+        function processItem(item, callback) {
+            var img = new Image();
+            img.onload = function() {
+                var w = img.naturalWidth || img.width;
+                var h = img.naturalHeight || img.height;
+                if (w === 0 || h === 0) { w = 1;
+                    h = 1; }
+                var c = document.createElement('canvas');
+                c.width = w;
+                c.height = h;
+                var cx = c.getContext('2d');
+                cx.drawImage(img, 0, 0);
+                var imageData = cx.getImageData(0, 0, w, h);
+                var data = imageData.data;
+                var c1 = hexToRgb(hex1.value);
+                var c2 = hexToRgb(hex2.value);
+                var th = item.threshold;
+                for (var i = 0; i < data.length; i += 4) {
+                    var gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                    if (gray >= th) {
+                        data[i] = c1.r;
+                        data[i + 1] = c1.g;
+                        data[i + 2] = c1.b;
+                    } else {
+                        data[i] = c2.r;
+                        data[i + 1] = c2.g;
+                        data[i + 2] = c2.b;
+                    }
+                }
+                cx.putImageData(imageData, 0, 0);
+                var url = c.toDataURL('image/png');
+                item.processedUrl = url;
+                item.width = w;
+                item.height = h;
+                item.processed = true;
+                callback(null, item);
+            };
+            img.onerror = function() {
+                callback('图片加载失败: ' + item.name, item);
+            };
+            img.src = item.origUrl;
+        }
+
+        function reprocessAll() {
+            if (isProcessing) return;
+            if (imageItems.length === 0) return;
+            isProcessing = true;
+            showProgress(true);
+            var total = imageItems.length;
+            var done = 0;
+            var errors = [];
+
+            function next() {
+                if (done >= total) {
+                    isProcessing = false;
+                    showProgress(false);
+                    renderGrid();
+                    updateSelectedPreview();
+                    updateButtons();
+                    updateDropCount();
+                    if (errors.length > 0) console.warn('部分图片处理失败:', errors);
+                    return;
+                }
+                var item = imageItems[done];
+                processItem(item, function(err, result) {
+                    if (err) errors.push(err);
+                    done++;
+                    updateProgress(done / total);
+                    next();
+                });
+            }
+            next();
+        }
+
+        function reprocessSingle(index) {
+            if (index < 0 || index >= imageItems.length) return;
+            var item = imageItems[index];
+            if (!item.origUrl) return;
+            var img = new Image();
+            img.onload = function() {
+                var w = img.naturalWidth || img.width;
+                var h = img.naturalHeight || img.height;
+                if (w === 0 || h === 0) { w = 1;
+                    h = 1; }
+                var c = document.createElement('canvas');
+                c.width = w;
+                c.height = h;
+                var cx = c.getContext('2d');
+                cx.drawImage(img, 0, 0);
+                var imageData = cx.getImageData(0, 0, w, h);
+                var data = imageData.data;
+                var c1 = hexToRgb(hex1.value);
+                var c2 = hexToRgb(hex2.value);
+                var th = item.threshold;
+                for (var i = 0; i < data.length; i += 4) {
+                    var gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                    if (gray >= th) {
+                        data[i] = c1.r;
+                        data[i + 1] = c1.g;
+                        data[i + 2] = c1.b;
+                    } else {
+                        data[i] = c2.r;
+                        data[i + 1] = c2.g;
+                        data[i + 2] = c2.b;
+                    }
+                }
+                cx.putImageData(imageData, 0, 0);
+                item.processedUrl = c.toDataURL('image/png');
+                item.width = w;
+                item.height = h;
+                item.processed = true;
+                renderGrid();
+                updateSelectedPreview();
+                updateButtons();
+                updateDropCount();
+            };
+            img.onerror = function() { console.error('重处理单张失败'); };
+            img.src = item.origUrl;
+        }
+
+        // ============================================================
+        //  进度
+        // ============================================================
+        function showProgress(show) {
+            progressWrap.classList.toggle('active', show);
+            if (!show) {
+                progressFill.style.width = '0%';
+                progressText.textContent = '';
+            }
+        }
+
+        function updateProgress(ratio) {
+            var pct = Math.round(ratio * 100);
+            progressFill.style.width = pct + '%';
+            progressText.textContent = '处理中 ' + pct + '%';
+        }
+
+        // ============================================================
+        //  图片管理
+        // ============================================================
+        function addImages(files) {
+            var toProcess = [];
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                if (!file.type.startsWith('image/')) continue;
+                var reader = new FileReader();
+                reader.onload = (function(f) {
+                    return function(e) {
+                        var item = {
+                            id: nextId++,
+                            file: f,
+                            name: f.name,
+                            ext: getFileExtension(f.type) || 'png',
+                            origUrl: e.target.result,
+                            processedUrl: null,
+                            width: 0,
+                            height: 0,
+                            processed: false,
+                            threshold: 127
+                        };
+                        imageItems.push(item);
+                        toProcess.push(item);
+                        if (imageItems.length === 1) selectedIndex = 0;
+                        updateUI();
+                        updateDropCount();
+                        if (toProcess.length > 0 && !isProcessing) {
+                            setTimeout(function() { reprocessAll(); }, 100);
+                        }
+                    };
+                })(file);
+                reader.readAsDataURL(file);
+            }
+            updateUI();
+            updateDropCount();
+        }
+
+        function removeItem(index) {
+            if (index < 0 || index >= imageItems.length) return;
+            var item = imageItems[index];
+            if (item.origUrl && item.origUrl.startsWith('blob:')) URL.revokeObjectURL(item.origUrl);
+            if (item.processedUrl && item.processedUrl.startsWith('blob:')) URL.revokeObjectURL(item.processedUrl);
+            imageItems.splice(index, 1);
+            if (selectedIndex === index) {
+                selectedIndex = -1;
+            } else if (selectedIndex > index) {
+                selectedIndex--;
+            }
+            if (imageItems.length === 0) {
+                selectedIndex = -1;
+                previewOriginal.style.display = 'none';
+                placeholderBig.style.display = 'flex';
+                canvas.width = 0;
+                canvas.height = 0;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                singleThreshold.value = 127;
+                singleThresholdVal.textContent = '127';
+                singleThreshold.disabled = true;
+                autoSingleBtn.disabled = true;
+            }
+            updateUI();
+            updateDropCount();
+            if (imageItems.length > 0 && !isProcessing) reprocessAll();
+            updateSelectedPreview();
+        }
+
+        function clearAll() {
+            if (imageItems.length === 0) return;
+            for (var i = 0; i < imageItems.length; i++) {
+                var item = imageItems[i];
+                if (item.origUrl && item.origUrl.startsWith('blob:')) URL.revokeObjectURL(item.origUrl);
+                if (item.processedUrl && item.processedUrl.startsWith('blob:')) URL.revokeObjectURL(item.processedUrl);
+            }
+            imageItems = [];
+            selectedIndex = -1;
+            previewOriginal.style.display = 'none';
+            placeholderBig.style.display = 'flex';
+            canvas.width = 0;
+            canvas.height = 0;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            showProgress(false);
+            singleThreshold.value = 127;
+            singleThresholdVal.textContent = '127';
+            singleThreshold.disabled = true;
+            autoSingleBtn.disabled = true;
+            updateUI();
+            updateDropCount();
+            updateSelectedPreview();
+        }
+
+        // ============================================================
+        //  UI更新
+        // ============================================================
+        function updateUI() {
+            var count = imageItems.length;
+            listCount.textContent = '(' + count + ')';
+            updateButtons();
+            renderGrid();
+            if (selectedIndex >= 0 && selectedIndex < imageItems.length) {
+                updateSelectedPreview();
+            } else if (count > 0) {
+                selectedIndex = 0;
+                updateSelectedPreview();
+            }
+        }
+
+        function updateButtons() {
+            var hasProcessed = imageItems.some(function(item) { return item.processed; });
+            batchDownloadBtn.disabled = !hasProcessed;
+            singleDownloadBtn.disabled = !(hasProcessed && selectedIndex >= 0 && selectedIndex < imageItems.length &&
+                imageItems[selectedIndex].processed);
+            if (hasProcessed) {
+                var count = imageItems.filter(function(i) { return i.processed; }).length;
+                batchDownloadBtn.textContent = '⬇️ 批量下载 (' + count + ')';
+            } else {
+                batchDownloadBtn.textContent = '⬇️ 批量下载';
+            }
+        }
+
+        function updateDropCount() {
+            var count = imageItems.length;
+            dropCount.textContent = '已上传 ' + count + ' 张';
+        }
+
+        // ============================================================
+        //  渲染网格
+        // ============================================================
+        function renderGrid() {
+            if (imageItems.length === 0) {
+                gridContainer.innerHTML =
+                    '<div class="empty-batch"><span class="icon">🖼️</span>上传图片开始创作，每张图片可独立调整阈值</div>';
+                return;
+            }
+            var html = '<div class="grid-list">';
+            for (var i = 0; i < imageItems.length; i++) {
+                var item = imageItems[i];
+                var active = (i === selectedIndex) ? ' active' : '';
+                var origSrc = item.origUrl || '';
+                var procSrc = item.processedUrl || '';
+                var fname = item.name || '未命名';
+                var shortName = fname.length > 20 ? fname.substring(0, 18) + '…' : fname;
+                var statusIcon = item.processed ? '✅' : '⏳';
+                var thVal = item.threshold || 127;
+                html += '<div class="grid-item' + active + '" data-index="' + i + '">';
+                html += '<div class="thumb-wrap"><div class="thumb-row">';
+                html += '<div class="orig-col"><span class="thumb-label">原</span>';
+                if (origSrc) html += '<img src="' + origSrc + '" loading="lazy" alt="原图">';
+                else html += '<div style="color:#333;font-size:20px;">?</div>';
+                html += '</div>';
+                html += '<div class="proc-col"><span class="thumb-label">效</span>';
+                if (procSrc) html += '<img src="' + procSrc + '" loading="lazy" alt="效果">';
+                else html += '<div style="color:#333;font-size:20px;">⏳</div>';
+                html += '</div></div></div>';
+                html += '<div class="item-info">';
+                html += '<span class="fname" title="' + fname + '">' + shortName + '</span>';
+                html += '<span class="th-val">T:' + thVal + '</span>';
+                html += '<span class="status-icon">' + statusIcon + '</span>';
+                html += '<button class="dl-single" data-index="' + i + '" title="单张下载">⬇️</button>';
+                html += '<button class="btn-delete" data-index="' + i + '" title="删除">✕</button>';
+                html += '</div>';
+                html += '<span class="item-index">#' + (i + 1) + '</span>';
+                html += '</div>';
+            }
+            html += '</div>';
+            gridContainer.innerHTML = html;
+
+            var items = gridContainer.querySelectorAll('.grid-item');
+            for (var j = 0; j < items.length; j++) {
+                (function(idx) {
+                    var el = items[idx];
+                    el.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('dl-single') || e.target.classList.contains(
+                                'btn-delete')) return;
+                        selectedIndex = idx;
+                        renderGrid();
+                        updateSelectedPreview();
+                        updateButtons();
+                    });
+                    var dlBtn = el.querySelector('.dl-single');
+                    if (dlBtn) {
+                        dlBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var index = parseInt(this.dataset.index);
+                            downloadSingle(index);
+                        });
+                    }
+                    var delBtn = el.querySelector('.btn-delete');
+                    if (delBtn) {
+                        delBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var index = parseInt(this.dataset.index);
+                            showConfirm(
+                                '🗑️ 删除图片',
+                                '确定要删除 "' + (imageItems[index] ? imageItems[index].name : '') + '" 吗？',
+                                function() {
+                                    removeItem(index);
+                                }
+                            );
+                        });
+                    }
+                })(j);
+            }
+        }
+
+        // ============================================================
+        //  预览更新
+        // ============================================================
+        function updateSelectedPreview() {
+            if (selectedIndex < 0 || selectedIndex >= imageItems.length) {
+                previewOriginal.style.display = 'none';
+                placeholderBig.style.display = 'flex';
+                canvas.width = 0;
+                canvas.height = 0;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                singleDownloadBtn.disabled = true;
+                singleThreshold.disabled = true;
+                autoSingleBtn.disabled = true;
+                return;
+            }
+            var item = imageItems[selectedIndex];
+            singleThreshold.value = item.threshold || 127;
+            singleThresholdVal.textContent = item.threshold || 127;
+            singleThreshold.disabled = false;
+            autoSingleBtn.disabled = false;
+
+            if (item.origUrl) {
+                previewOriginal.src = item.origUrl;
+                previewOriginal.style.display = 'block';
+                placeholderBig.style.display = 'none';
+            } else {
+                previewOriginal.style.display = 'none';
+                placeholderBig.style.display = 'flex';
+            }
+            if (item.processedUrl) {
+                var img = new Image();
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    canvas.style.display = 'block';
+                };
+                img.src = item.processedUrl;
+            } else {
+                canvas.width = 0;
+                canvas.height = 0;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            singleDownloadBtn.disabled = !item.processed;
+        }
+
+        // ============================================================
+        //  阈值控制
+        // ============================================================
+        singleThreshold.addEventListener('input', function() {
+            var val = parseInt(this.value);
+            singleThresholdVal.textContent = val;
+            if (selectedIndex >= 0 && selectedIndex < imageItems.length) {
+                var item = imageItems[selectedIndex];
+                item.threshold = val;
+                reprocessSingle(selectedIndex);
+            }
+        });
+
+        autoSingleBtn.addEventListener('click', function() {
+            if (selectedIndex < 0 || selectedIndex >= imageItems.length) return;
+            var item = imageItems[selectedIndex];
+            if (!item.origUrl) return;
+            var img = new Image();
+            img.onload = function() {
+                var w = img.naturalWidth || img.width;
+                var h = img.naturalHeight || img.height;
+                if (w === 0 || h === 0) { w = 1;
+                    h = 1; }
+                var c = document.createElement('canvas');
+                c.width = w;
+                c.height = h;
+                var cx = c.getContext('2d');
+                cx.drawImage(img, 0, 0);
+                var data = cx.getImageData(0, 0, w, h).data;
+                var bestT = calcOtsu(data, w, h);
+                item.threshold = bestT;
+                singleThreshold.value = bestT;
+                singleThresholdVal.textContent = bestT;
+                reprocessSingle(selectedIndex);
+            };
+            img.src = item.origUrl;
+        });
+
+        autoAllBtn.addEventListener('click', function() {
+            if (imageItems.length === 0) return;
+            var total = imageItems.length;
+            var done = 0;
+            showProgress(true);
+
+            function processNext() {
+                if (done >= total) {
+                    showProgress(false);
+                    reprocessAll();
+                    return;
+                }
+                var item = imageItems[done];
+                var img = new Image();
+                img.onload = function() {
+                    var w = img.naturalWidth || img.width;
+                    var h = img.naturalHeight || img.height;
+                    if (w === 0 || h === 0) { w = 1;
+                        h = 1; }
+                    var c = document.createElement('canvas');
+                    c.width = w;
+                    c.height = h;
+                    var cx = c.getContext('2d');
+                    cx.drawImage(img, 0, 0);
+                    var data = cx.getImageData(0, 0, w, h).data;
+                    var bestT = calcOtsu(data, w, h);
+                    item.threshold = bestT;
+                    done++;
+                    updateProgress(done / total);
+                    processNext();
+                };
+                img.onerror = function() {
+                    done++;
+                    updateProgress(done / total);
+                    processNext();
+                };
+                img.src = item.origUrl;
+            }
+            processNext();
+        });
+
+        resetThresholdsBtn.addEventListener('click', function() {
+            if (imageItems.length === 0) return;
+            imageItems.forEach(function(item) { item.threshold = 127; });
+            if (selectedIndex >= 0 && selectedIndex < imageItems.length) {
+                singleThreshold.value = 127;
+                singleThresholdVal.textContent = '127';
+            }
+            reprocessAll();
+        });
+
+        // ============================================================
+        //  下载功能
+        // ============================================================
+        function downloadSingle(index) {
+            var item = imageItems[index];
+            if (!item || !item.processedUrl) return;
+            var a = document.createElement('a');
+            var ext = (formatSelect.value === 'original') ? (item.ext || 'png') : getFormatExtension();
+            a.download = (item.name.replace(/\.[^.]+$/, '') || 'image') + '_processed.' + ext;
+            a.href = item.processedUrl;
+            a.click();
+        }
+
+        function getFormatExtension() {
+            var map = { 'png': 'png', 'jpeg': 'jpg', 'webp': 'webp', 'original': 'png' };
+            return map[formatSelect.value] || 'png';
+        }
+
+        function getFormatMime() {
+            var map = { 'png': 'image/png', 'jpeg': 'image/jpeg', 'webp': 'image/webp', 'original': 'image/png' };
+            return map[formatSelect.value] || 'image/png';
+        }
+
+        batchDownloadBtn.addEventListener('click', function() {
+            var processedItems = imageItems.filter(function(item) { return item.processed; });
+            if (processedItems.length === 0) return;
+            if (processedItems.length === 1) {
+                downloadSingle(imageItems.indexOf(processedItems[0]));
+                return;
+            }
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = '⏳ 打包中...';
+            var zip = new JSZip();
+            var formatVal = formatSelect.value;
+            var isOriginal = (formatVal === 'original');
+
+            var promises = processedItems.map(function(item) {
+                return new Promise(function(resolve, reject) {
+                    var img = new Image();
+                    img.onload = function() {
+                        var c = document.createElement('canvas');
+                        c.width = img.width;
+                        c.height = img.height;
+                        var cx = c.getContext('2d');
+                        cx.drawImage(img, 0, 0);
+                        var ext = isOriginal ? (item.ext || 'png') : getFormatExtension();
+                        var mime = isOriginal ? ('image/' + (item.ext === 'jpg' ? 'jpeg' : item.ext)) :
+                            getFormatMime();
+                        if (mime === 'image/jpg') mime = 'image/jpeg';
+                        var quality = (mime === 'image/jpeg' || mime === 'image/webp') ? 0.92 : undefined;
+                        var baseName = (item.name.replace(/\.[^.]+$/, '') || 'image') + '_processed.' + ext;
+                        try {
+                            var dataUrl = c.toDataURL(mime, quality);
+                            var b64 = dataUrl.split(',')[1];
+                            zip.file(baseName, b64, { base64: true });
+                            resolve();
+                        } catch (e) {
+                            try {
+                                var fallbackData = item.processedUrl.split(',')[1];
+                                zip.file(baseName, fallbackData, { base64: true });
+                                resolve();
+                            } catch (e2) { reject(e2); }
+                        }
+                    };
+                    img.onerror = function() { reject(new Error('图片加载失败')); };
+                    img.src = item.processedUrl;
+                });
+            });
+
+            Promise.all(promises).then(function() {
+                zip.generateAsync({ type: 'blob' }).then(function(content) {
+                    saveAs(content, 'batch_' + formatDate() + '.zip');
+                    btn.textContent = '✅ 完成';
+                    setTimeout(function() {
+                        btn.textContent = '⬇️ 批量下载 (' + processedItems.length + ')';
+                        btn.disabled = false;
+                        updateButtons();
+                    }, 1500);
+                }).catch(function(err) {
+                    console.error('ZIP生成失败:', err);
+                    btn.textContent = '❌ 重试';
+                    btn.disabled = false;
+                    setTimeout(function() { updateButtons(); }, 2000);
+                });
+            }).catch(function(err) {
+                console.error('批量处理失败:', err);
+                btn.textContent = '❌ 重试';
+                btn.disabled = false;
+                setTimeout(function() { updateButtons(); }, 2000);
+            });
+        });
+
+        singleDownloadBtn.addEventListener('click', function() {
+            if (selectedIndex >= 0 && selectedIndex < imageItems.length) {
+                downloadSingle(selectedIndex);
+            }
+        });
+
+        // ============================================================
+        //  清空 (确认)
+        // ============================================================
+        clearAllBtn.addEventListener('click', function() {
+            if (imageItems.length === 0) return;
+            showConfirm('🗑️ 清空所有图片', '确定要清空所有图片吗？此操作不可撤销！', function() { clearAll(); });
+        });
+
+        // ============================================================
+        //  确认弹窗逻辑
+        // ============================================================
+        function showConfirm(title, message, onConfirm, onCancel) {
+            confirmTitle.textContent = title || '⚠️ 确认';
+            confirmMessage.textContent = message || '确定执行？';
+            confirmOverlay.style.display = 'flex';
+            confirmCallback = onConfirm || function() {};
+            confirmYesBtn.onclick = function() {
+                confirmOverlay.style.display = 'none';
+                if (typeof confirmCallback === 'function') confirmCallback();
+                confirmCallback = null;
+            };
+            confirmNoBtn.onclick = function() {
+                confirmOverlay.style.display = 'none';
+                if (typeof onCancel === 'function') onCancel();
+                confirmCallback = null;
+            };
+        }
+        confirmOverlay.addEventListener('click', function(e) {
+            if (e.target === confirmOverlay) {
+                confirmOverlay.style.display = 'none';
+                confirmCallback = null;
+            }
+        });
+
+        // ============================================================
+        //  上传事件 (二合一)
+        // ============================================================
+        dropZone.addEventListener('click', function(e) { fileInput.click(); });
+        fileInput.addEventListener('change', function(e) {
+            var files = e.target.files;
+            if (files.length === 0) return;
+            addImages(files);
+            this.value = '';
+        });
+
+        document.addEventListener('dragover', function(e) { e.preventDefault(); });
+        document.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var files = e.dataTransfer.files;
+            if (files.length === 0) return;
+            var hasImage = false;
+            for (var i = 0; i < files.length; i++) {
+                if (files[i].type.startsWith('image/')) { hasImage = true; break; }
+            }
+            if (hasImage) addImages(files);
+        });
+
+        dropZone.addEventListener('dragenter', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var related = e.relatedTarget;
+            if (!dropZone.contains(related)) {
+                dropZone.classList.remove('dragover');
+            }
+        });
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('dragover');
+            var files = e.dataTransfer.files;
+            if (files.length === 0) return;
+            var hasImage = false;
+            for (var i = 0; i < files.length; i++) {
+                if (files[i].type.startsWith('image/')) { hasImage = true; break; }
+            }
+            if (hasImage) {
+                addImages(files);
+                dropZone.style.background = 'rgba(255,0,255,0.08)';
+                setTimeout(function() { dropZone.style.background = ''; }, 300);
+            }
+        });
+        document.addEventListener('dragleave', function(e) {
+            if (e.relatedTarget === null) dropZone.classList.remove('dragover');
+        });
+
+        // ============================================================
+        //  键盘快捷键
+        // ============================================================
+        document.addEventListener('keydown', function(e) {
+            // 忽略输入框中的按键
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (imageItems.length === 0) return;
+
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (selectedIndex < imageItems.length - 1) {
+                    selectedIndex++;
+                    renderGrid();
+                    updateSelectedPreview();
+                    updateButtons();
+                }
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (selectedIndex > 0) {
+                    selectedIndex--;
+                    renderGrid();
+                    updateSelectedPreview();
+                    updateButtons();
+                }
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (selectedIndex >= 0 && selectedIndex < imageItems.length) {
+                    var name = imageItems[selectedIndex].name || '图片';
+                    showConfirm('🗑️ 删除图片', '确定要删除 "' + name + '" 吗？', function() {
+                        var idx = selectedIndex;
+                        removeItem(idx);
+                    });
+                }
+            }
+        });
+
+        // ============================================================
+        //  下拉菜单
+        // ============================================================
+        (function initCustomSelect() {
+            var options = formatSelect.options;
+            for (var i = 0; i < options.length; i++) {
+                var opt = options[i];
+                var div = document.createElement('div');
+                div.className = 'custom-option';
+                div.innerText = opt.text;
+                div.dataset.value = opt.value;
+                div.dataset.index = i;
+                selectOptions.appendChild(div);
+            }
+            selectTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var isOpen = selectOptions.classList.contains('active');
+                selectOptions.classList.remove('active');
+                selectTrigger.classList.remove('active');
+                if (!isOpen) {
+                    selectOptions.classList.add('active');
+                    selectTrigger.classList.add('active');
+                }
+            });
+            selectOptions.addEventListener('click', function(e) {
+                var target = e.target;
+                if (target.classList.contains('custom-option')) {
+                    var val = target.dataset.value;
+                    var text = target.innerText;
+                    formatSelect.value = val;
+                    selectDisplayText.innerText = text;
+                    selectOptions.classList.remove('active');
+                    selectTrigger.classList.remove('active');
+                    var evt = document.createEvent('HTMLEvents');
+                    evt.initEvent('change', true, false);
+                    formatSelect.dispatchEvent(evt);
+                }
+            });
+            document.addEventListener('click', function(e) {
+                if (!document.getElementById('customSelectWrap').contains(e.target)) {
+                    selectOptions.classList.remove('active');
+                    selectTrigger.classList.remove('active');
+                }
+            });
+            var defaultText = formatSelect.options[formatSelect.selectedIndex].text;
+            selectDisplayText.innerText = defaultText;
+        })();
+
+        // ============================================================
+        //  初始化
+        // ============================================================
         updateColorOne('#FF00FF');
         updateColorTwo('#000000');
+        singleThreshold.disabled = true;
+        autoSingleBtn.disabled = true;
+        updateUI();
+        updateDropCount();
+        console.log('🚀 增强版 #FF00FF 生成器已启动 | 支持快捷键: ← → 切换, Delete 删除');
     </script>
 </body>
 </html>
