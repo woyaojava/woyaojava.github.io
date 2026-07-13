@@ -31,6 +31,7 @@
             justify-content: center;
             padding: 1.5rem;
             overflow: hidden;
+            transition: background-color 0.05s;
         }
 
         .container {
@@ -63,6 +64,7 @@
         }
         .main-title span {
             color: #2d4a2d;
+            transition: color 0.05s;
         }
 
         .sub {
@@ -73,6 +75,7 @@
             color: #3d5a3d;
             opacity: 0.6;
             margin-bottom: 2.5rem;
+            transition: color 0.05s;
         }
 
         .button-group {
@@ -99,7 +102,7 @@
             text-align: center;
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             cursor: pointer;
-            transition: transform 0.12s, background 0.12s;
+            transition: transform 0.12s, background 0.12s, color 0.05s, border-color 0.05s;
             box-shadow: none;
             word-break: break-word;
             user-select: none;
@@ -127,6 +130,7 @@
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             pointer-events: none;
             z-index: 20;
+            transition: color 0.05s;
         }
 
         @media (max-width: 480px) {
@@ -165,6 +169,12 @@
                 transform: translateY(0);
             }
         }
+
+        body.colourful .main-title,
+        body.colourful .sub,
+        body.colourful .btn {
+            will-change: transform;
+        }
     </style>
 </head>
 <body>
@@ -178,13 +188,10 @@
         <div class="sub">· 工 具 ·</div>
 
         <div class="button-group">
-            <!-- 所有“工具”均已改为“雷霆” -->
-            <a href="https://woyaojava.github.io/leiting/fanyi" target="_blank" class="btn">雷霆翻译器 by 宵夜</a>
-            <a href="https://woyaojava.github.io/leiting/yinpin" target="_blank" class="btn">雷霆音频编辑器 by 宵夜</a>
-            <!-- 保留原有的 #FF00FF 一键生成器 -->
-            <a href="https://woyaojava.github.io/leiting/ff00ff" target="_blank" class="btn">#FF00FF 一键生成器</a>
-            <!-- 新增镜像一键生成器 -->
-            <a href="https://woyaojava.github.io/leiting/mirror" target="_blank" class="btn">镜像一键生成器</a>
+            <a href="https://woyaojava.github.io/tool/fanyi" class="btn">雷霆翻译器 by 宵夜</a>
+            <a href="https://woyaojava.github.io/tool/yinpin" class="btn">雷霆音频编辑器 by 宵夜</a>
+            <a href="https://woyaojava.github.io/tool/ff00ff" class="btn">#FF00FF 一键生成器</a>
+            <a href="https://woyaojava.github.io/tool/mirror" class="btn">镜像一键生成器</a>
         </div>
     </div>
 
@@ -192,6 +199,7 @@
 
     <script>
         (function() {
+            // 按钮按压特效
             var buttons = document.querySelectorAll('.btn');
             buttons.forEach(function(btn) {
                 btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
@@ -201,6 +209,59 @@
                 btn.addEventListener('touchend', function(e) { this.classList.remove('pressed'); }, { passive: true });
                 btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
             });
+
+            // ============================================================
+            // 彩色物理模式 (/?colourful)
+            // ============================================================
+            function isColourfulMode() {
+                return new URLSearchParams(window.location.search).has('colourful');
+            }
+
+            if (isColourfulMode()) {
+                document.body.classList.add('colourful');
+
+                var colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4'];
+                function randomColor() {
+                    return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                }
+
+                setInterval(function() {
+                    var bg = randomColor();
+                    document.body.style.backgroundColor = bg;
+                    document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
+                        el.style.color = randomColor();
+                    });
+                    document.querySelectorAll('.btn').forEach(function(el) {
+                        el.style.color = randomColor();
+                        el.style.borderColor = randomColor();
+                    });
+                }, 100);
+
+                var elements = document.querySelectorAll('.main-title, .sub, .btn');
+                var physData = [];
+                elements.forEach(function(el) {
+                    physData.push({
+                        el: el,
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2,
+                        ampX: 4 + Math.random() * 12,
+                        ampY: 4 + Math.random() * 12,
+                        speedX: 0.6 + Math.random() * 1.8,
+                        speedY: 0.6 + Math.random() * 1.8
+                    });
+                });
+
+                function animatePhysics() {
+                    var now = performance.now() / 1000;
+                    physData.forEach(function(d) {
+                        var x = Math.sin(now * d.speedX + d.phaseX) * d.ampX;
+                        var y = Math.cos(now * d.speedY + d.phaseY) * d.ampY;
+                        d.el.style.transform = 'translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)';
+                    });
+                    requestAnimationFrame(animatePhysics);
+                }
+                animatePhysics();
+            }
         })();
     </script>
 </body>
