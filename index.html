@@ -21,6 +21,7 @@
             overflow: hidden;
             margin: 0;
             padding: 0;
+            transition: background-color 0.05s;
         }
 
         .container {
@@ -67,7 +68,7 @@
             user-select: none;
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .main-title span { color: #2d4a2d; cursor: default; }
+        .main-title span { color: #2d4a2d; cursor: default; transition: color 0.05s; }
         .main-title .clickable-悟 {
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
@@ -87,7 +88,7 @@
             color: #3d5a3d;
             opacity: 0.7;
             margin-top: 0.1rem;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: color 0.05s;
         }
 
         .button-grid {
@@ -121,7 +122,7 @@
             flex: 1 0 auto;
             min-width: 130px;
             max-width: 200px;
-            transition: transform 0.12s, background 0.12s, opacity 0.5s ease;
+            transition: transform 0.12s, background 0.12s, color 0.05s, border-color 0.05s;
             box-shadow: none;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
@@ -177,6 +178,7 @@
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             pointer-events: none;
             z-index: 20;
+            transition: color 0.05s;
         }
 
         #poop-container {
@@ -230,6 +232,13 @@
 
         .fade-in { animation: fadeUp 0.9s ease forwards; }
         @keyframes fadeUp { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+        /* 彩色模式专用 —— 让所有组件具有物理浮动效果 (transform 由 JS 驱动) */
+        body.colourful .main-title,
+        body.colourful .sub,
+        body.colourful .btn {
+            will-change: transform;
+        }
     </style>
 </head>
 <body>
@@ -243,13 +252,12 @@
             <div class="sub">· wu · wu · wu ·</div>
         </div>
         <div class="button-grid" id="buttonGrid">
-            <a href="https://woyaojava.github.io/game/" target="_blank" class="btn" id="btn1">游戏</a>
-            <!-- 以下按钮文字已从“雷霆”改为“工具” -->
-            <a href="https://woyaojava.github.io/leiting" target="_blank" class="btn" id="btn2">工具</a>
+            <a href="https://woyaojava.github.io/game/" class="btn" id="btn1">游戏</a>
+            <a href="https://woyaojava.github.io/tool" class="btn" id="btn2">工具</a>
             <a href="#" class="btn" id="btn3">按钮三</a>
             <a href="#" class="btn" id="btn4">按钮四</a>
             <a href="#" class="btn" id="btn5">按钮五</a>
-            <a href="https://github.com/woyaojava/woyaojava.github.io" target="_blank" class="btn btn-hidden" id="btn6">代码（史山）</a>
+            <a href="https://github.com/woyaojava/woyaojava.github.io" class="btn btn-hidden" id="btn6">代码（史山）</a>
         </div>
     </div>
     <div id="poop-container"></div>
@@ -257,13 +265,14 @@
 
     <script>
         (function() {
+            // ---- 统一淡入动画（已有 fade-in 类，无需额外操作） ----
             var container = document.getElementById('container');
             container.classList.remove('shifted');
             window.addEventListener('load', function() {
                 setTimeout(function() { container.classList.add('shifted'); }, 500);
             });
 
-            // ---- 彩蛋逻辑 ----
+            // ---- 彩蛋逻辑（不变） ----
             var clickableWu = document.getElementById('clickableWu');
             var btn6 = document.getElementById('btn6');
             var clickCount = 0;
@@ -330,7 +339,7 @@
             btn4.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮四功能待添加'); });
             btn5.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮五功能待添加'); });
 
-            // ---- 物理引擎 + 拖拽 ----
+            // ---- 物理引擎 + 拖拽 (彩蛋💩) ----
             function createPoops() {
                 var container = document.getElementById('poop-container');
                 var poops = [];
@@ -432,6 +441,67 @@
                 }
                 requestAnimationFrame(updatePoops);
             }
+
+            // ============================================================
+            // 新增：彩色物理模式 (/?colourful)
+            // ============================================================
+            function isColourfulMode() {
+                return new URLSearchParams(window.location.search).has('colourful');
+            }
+
+            if (isColourfulMode()) {
+                document.body.classList.add('colourful');
+
+                // 1. 高频闪烁颜色
+                var colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4'];
+                function randomColor() {
+                    return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                }
+
+                var flashInterval = setInterval(function() {
+                    var bg = randomColor();
+                    document.body.style.backgroundColor = bg;
+                    // 标题、副标题、版权文字颜色
+                    document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
+                        el.style.color = randomColor();
+                    });
+                    // 按钮文字颜色 & 边框颜色
+                    document.querySelectorAll('.btn').forEach(function(el) {
+                        el.style.color = randomColor();
+                        el.style.borderColor = randomColor();
+                    });
+                }, 100);
+
+                // 2. 物理浮动效果（所有主要组件）
+                var elements = document.querySelectorAll('.main-title, .sub, .btn');
+                var physData = [];
+                elements.forEach(function(el) {
+                    var data = {
+                        el: el,
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2,
+                        ampX: 4 + Math.random() * 12,   // px
+                        ampY: 4 + Math.random() * 12,
+                        speedX: 0.6 + Math.random() * 1.8,
+                        speedY: 0.6 + Math.random() * 1.8
+                    };
+                    physData.push(data);
+                });
+
+                function animatePhysics() {
+                    var now = performance.now() / 1000;
+                    physData.forEach(function(d) {
+                        var x = Math.sin(now * d.speedX + d.phaseX) * d.ampX;
+                        var y = Math.cos(now * d.speedY + d.phaseY) * d.ampY;
+                        d.el.style.transform = 'translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)';
+                    });
+                    requestAnimationFrame(animatePhysics);
+                }
+                animatePhysics();
+
+                // 注意：彩色模式下，点击“悟”触发的💩彩蛋仍然有效，且💩不受影响
+            }
+
         })();
     </script>
 </body>
