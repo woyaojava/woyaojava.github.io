@@ -8,18 +8,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        *:focus,
-        *:focus-visible {
-            outline: none !important;
-        }
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *:focus, *:focus-visible { outline: none !important; }
+        * { -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -45,9 +36,7 @@
             z-index: 10;
             pointer-events: none;
         }
-        .container * {
-            pointer-events: auto;
-        }
+        .container * { pointer-events: auto; }
 
         .main-title {
             font-size: clamp(3.6rem, 12vw, 6rem);
@@ -62,10 +51,7 @@
             justify-content: center;
             gap: 0.1rem 0.6rem;
         }
-        .main-title span {
-            color: #2d4a2d;
-            transition: color 0.05s;
-        }
+        .main-title span { color: #2d4a2d; transition: color 0.05s; }
 
         .sub {
             font-size: clamp(0.8rem, 2vw, 1rem);
@@ -107,14 +93,8 @@
             word-break: break-word;
             user-select: none;
         }
-        .btn:hover {
-            background: rgba(45, 74, 45, 0.08);
-            transform: none;
-        }
-        .btn.pressed {
-            transform: scale(0.93);
-            background: rgba(45, 74, 45, 0.30);
-        }
+        .btn:hover { background: rgba(45, 74, 45, 0.08); transform: none; }
+        .btn.pressed { transform: scale(0.93); background: rgba(45, 74, 45, 0.30); }
 
         .footer-credit {
             position: fixed;
@@ -134,41 +114,15 @@
         }
 
         @media (max-width: 480px) {
-            .main-title {
-                font-size: clamp(2.8rem, 10vw, 4.5rem);
-                letter-spacing: 4px;
-            }
-            .sub {
-                font-size: 0.7rem;
-                letter-spacing: 6px;
-                margin-bottom: 1.8rem;
-            }
-            .btn {
-                font-size: 0.9rem;
-                padding: 0.7rem 1.2rem;
-            }
-            .button-group {
-                gap: 1rem;
-            }
-            .footer-credit {
-                font-size: 0.6rem;
-                bottom: 16px;
-            }
+            .main-title { font-size: clamp(2.8rem, 10vw, 4.5rem); letter-spacing: 4px; }
+            .sub { font-size: 0.7rem; letter-spacing: 6px; margin-bottom: 1.8rem; }
+            .btn { font-size: 0.9rem; padding: 0.7rem 1.2rem; }
+            .button-group { gap: 1rem; }
+            .footer-credit { font-size: 0.6rem; bottom: 16px; }
         }
 
-        .fade-in {
-            animation: fadeUp 0.7s ease forwards;
-        }
-        @keyframes fadeUp {
-            0% {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        .fade-in { animation: fadeUp 0.7s ease forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
 
         body.colourful .main-title,
         body.colourful .sub,
@@ -178,15 +132,9 @@
     </style>
 </head>
 <body>
-
     <div class="container fade-in">
-        <h1 class="main-title">
-            <span>捂</span>
-            <span>五</span>
-            <span>悟</span>
-        </h1>
+        <h1 class="main-title"><span>捂</span><span>五</span><span>悟</span></h1>
         <div class="sub">· 工 具 ·</div>
-
         <div class="button-group">
             <a href="https://woyaojava.github.io/tool/fanyi" class="btn">雷霆翻译器 by 宵夜</a>
             <a href="https://woyaojava.github.io/tool/yinpin" class="btn">雷霆音频编辑器 by 宵夜</a>
@@ -194,12 +142,10 @@
             <a href="https://woyaojava.github.io/tool/mirror" class="btn">镜像一键生成器</a>
         </div>
     </div>
-
     <div class="footer-credit">Powered by DeepSeek</div>
 
     <script>
         (function() {
-            // 按钮按压特效
             var buttons = document.querySelectorAll('.btn');
             buttons.forEach(function(btn) {
                 btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
@@ -261,6 +207,18 @@
                     requestAnimationFrame(animatePhysics);
                 }
                 animatePhysics();
+
+                // 修改所有工具链接，使跳转保持 ?colourful
+                var toolLinks = document.querySelectorAll('.btn');
+                toolLinks.forEach(function(link) {
+                    if (link.href) {
+                        try {
+                            var url = new URL(link.href, window.location.origin);
+                            url.search = 'colourful';
+                            link.href = url.toString();
+                        } catch(e) {}
+                    }
+                });
             }
         })();
     </script>
