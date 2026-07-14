@@ -8,8 +8,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        *:focus, *:focus-visible { outline: none !important; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        *:focus,
+        *:focus-visible {
+            outline: none !important;
+        }
 
         body {
             font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -40,7 +47,9 @@
             z-index: 10;
             pointer-events: none;
         }
-        .container * { pointer-events: auto; }
+        .container * {
+            pointer-events: auto;
+        }
 
         .container.shifted {
             transform: translate(-50%, calc(-50vh + 80px));
@@ -66,7 +75,11 @@
             user-select: none;
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .main-title span { color: #2d4a2d; cursor: default; transition: color 0.05s; }
+        .main-title span {
+            color: #2d4a2d;
+            cursor: default;
+            transition: color 0.05s;
+        }
         .main-title .clickable-悟 {
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
@@ -125,15 +138,25 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-        .btn:hover { background: rgba(45, 74, 45, 0.10); transform: none; }
-        .btn.pressed { transform: scale(0.93); background: rgba(45, 74, 45, 0.30); }
+        .btn:hover {
+            background: rgba(45, 74, 45, 0.10);
+            transform: none;
+        }
+        .btn.pressed {
+            transform: scale(0.93);
+            background: rgba(45, 74, 45, 0.30);
+        }
         .btn-hidden {
             display: none;
             opacity: 0;
             transform: scale(0.9);
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .btn-hidden.show { display: inline-block; opacity: 1; transform: scale(1); }
+        .btn-hidden.show {
+            display: inline-block;
+            opacity: 1;
+            transform: scale(1);
+        }
 
         .container.shifted .button-grid {
             opacity: 1;
@@ -189,23 +212,58 @@
             transition: none;
             touch-action: none;
         }
-        .poop:active { cursor: grabbing; }
-
-        @media (max-width: 480px) {
-            .main-title { letter-spacing: 6px; }
-            .sub { letter-spacing: 8px; }
-            .container.shifted .main-title { letter-spacing: 4px; }
-            .container.shifted .sub { letter-spacing: 6px; }
-            .container.shifted { transform: translate(-50%, calc(-50vh + 60px)); }
-            .footer-credit { font-size: 0.6rem; bottom: 16px; }
-            .btn { font-size: 1rem; padding: 0.7rem 1.6rem; min-width: 100px; max-width: 160px; }
-            .button-grid { gap: 0.6rem 0.9rem; max-width: 100%; }
-            .poop { font-size: 1.8rem; }
+        .poop:active {
+            cursor: grabbing;
         }
 
-        .fade-in { animation: fadeUp 0.9s ease forwards; }
-        @keyframes fadeUp { 0% { opacity: 0; } 100% { opacity: 1; } }
+        @media (max-width: 480px) {
+            .main-title {
+                letter-spacing: 6px;
+            }
+            .sub {
+                letter-spacing: 8px;
+            }
+            .container.shifted .main-title {
+                letter-spacing: 4px;
+            }
+            .container.shifted .sub {
+                letter-spacing: 6px;
+            }
+            .container.shifted {
+                transform: translate(-50%, calc(-50vh + 60px));
+            }
+            .footer-credit {
+                font-size: 0.6rem;
+                bottom: 16px;
+            }
+            .btn {
+                font-size: 1rem;
+                padding: 0.7rem 1.6rem;
+                min-width: 100px;
+                max-width: 160px;
+            }
+            .button-grid {
+                gap: 0.6rem 0.9rem;
+                max-width: 100%;
+            }
+            .poop {
+                font-size: 1.8rem;
+            }
+        }
 
+        .fade-in {
+            animation: fadeUp 0.9s ease forwards;
+        }
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* 彩色模式开启时元素浮动 */
         body.colourful .main-title,
         body.colourful .sub,
         body.colourful .btn {
@@ -229,7 +287,7 @@
             <a href="#" class="btn" id="btn3">按钮三</a>
             <a href="#" class="btn" id="btn4">按钮四</a>
             <a href="#" class="btn" id="btn5">按钮五</a>
-            <a href="https://github.com/woyaojava/woyaojava.github.io" class="btn btn-hidden" id="btn6">代码（史山）</a>
+            <a href="https://woyaojava.github.io/about/" class="btn" id="btn6">关于</a>
         </div>
     </div>
     <div id="poop-container"></div>
@@ -237,15 +295,154 @@
 
     <script>
         (function() {
+            // ---------- 全局变量 ----------
             var container = document.getElementById('container');
-            container.classList.remove('shifted');
-            window.addEventListener('load', function() {
-                setTimeout(function() { container.classList.add('shifted'); }, 500);
-            });
-
-            // ---- 彩蛋逻辑 ----
+            var buttonGrid = document.getElementById('buttonGrid');
             var clickableWu = document.getElementById('clickableWu');
             var btn6 = document.getElementById('btn6');
+            var btn1 = document.getElementById('btn1');
+            var btn2 = document.getElementById('btn2');
+
+            // 彩色模式状态
+            var colourfulActive = false;
+            var flashInterval = null;
+            var animFrameId = null;
+            var physData = [];
+
+            // ---------- 彩色模式核心功能 ----------
+            function startColourfulEffects() {
+                if (flashInterval) return; // 已启动
+                document.body.classList.add('colourful');
+
+                var colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4'];
+
+                function randomColor() {
+                    return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                }
+
+                // 高频闪烁
+                flashInterval = setInterval(function() {
+                    var bg = randomColor();
+                    document.body.style.backgroundColor = bg;
+                    document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
+                        el.style.color = randomColor();
+                    });
+                    document.querySelectorAll('.btn').forEach(function(el) {
+                        el.style.color = randomColor();
+                        el.style.borderColor = randomColor();
+                    });
+                }, 100);
+
+                // 浮动效果
+                var elements = document.querySelectorAll('.main-title, .sub, .btn');
+                physData = [];
+                elements.forEach(function(el) {
+                    var data = {
+                        el: el,
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2,
+                        ampX: 4 + Math.random() * 12,
+                        ampY: 4 + Math.random() * 12,
+                        speedX: 0.6 + Math.random() * 1.8,
+                        speedY: 0.6 + Math.random() * 1.8
+                    };
+                    physData.push(data);
+                });
+
+                function animatePhysics() {
+                    var now = performance.now() / 1000;
+                    physData.forEach(function(d) {
+                        var x = Math.sin(now * d.speedX + d.phaseX) * d.ampX;
+                        var y = Math.cos(now * d.speedY + d.phaseY) * d.ampY;
+                        d.el.style.transform = 'translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)';
+                    });
+                    animFrameId = requestAnimationFrame(animatePhysics);
+                }
+                animatePhysics();
+
+                // 更新链接，添加 ?colourful
+                updateLinks(true);
+            }
+
+            function stopColourfulEffects() {
+                if (flashInterval) {
+                    clearInterval(flashInterval);
+                    flashInterval = null;
+                }
+                if (animFrameId) {
+                    cancelAnimationFrame(animFrameId);
+                    animFrameId = null;
+                }
+                document.body.classList.remove('colourful');
+                // 重置样式
+                document.body.style.backgroundColor = '';
+                document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
+                    el.style.color = '';
+                });
+                document.querySelectorAll('.btn').forEach(function(el) {
+                    el.style.color = '';
+                    el.style.borderColor = '';
+                    el.style.transform = '';
+                });
+                // 重置浮动
+                document.querySelectorAll('.main-title, .sub, .btn').forEach(function(el) {
+                    el.style.transform = '';
+                });
+                physData = [];
+                // 更新链接，移除 ?colourful
+                updateLinks(false);
+            }
+
+            function updateLinks(addColourful) {
+                var links = [btn1, btn2, btn6];
+                links.forEach(function(link) {
+                    if (!link || link.href === '#') return;
+                    try {
+                        var url = new URL(link.href, window.location.origin);
+                        if (addColourful) {
+                            url.search = 'colourful';
+                        } else {
+                            url.search = '';
+                        }
+                        link.href = url.toString();
+                    } catch (e) { /* 忽略无效URL */ }
+                });
+            }
+
+            function toggleColourful() {
+                colourfulActive = !colourfulActive;
+                if (colourfulActive) {
+                    startColourfulEffects();
+                } else {
+                    stopColourfulEffects();
+                }
+                // 按钮文字固定为 "炫彩我要加瓦！！！"，不再动态更新
+            }
+
+            // 检查URL参数，初始化彩色状态
+            function isColourfulMode() {
+                return new URLSearchParams(window.location.search).has('colourful');
+            }
+
+            // ---------- 创建彩色开关（彩蛋触发后显示） ----------
+            function createColourfulToggle() {
+                // 检查是否已存在
+                if (document.getElementById('colourfulToggle')) return;
+
+                var toggleBtn = document.createElement('a');
+                toggleBtn.id = 'colourfulToggle';
+                toggleBtn.className = 'btn';
+                toggleBtn.href = '#';
+                toggleBtn.textContent = '炫彩我要加瓦！！！'; // 固定显示此文字
+                toggleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleColourful();
+                });
+                // 插入到 button-grid 末尾
+                buttonGrid.appendChild(toggleBtn);
+            }
+
+            // ---------- 彩蛋逻辑 ----------
             var clickCount = 0;
             var firstClickTime = 0;
             var unlocked = false;
@@ -254,7 +451,8 @@
             function resetChallenge() {
                 clickCount = 0;
                 firstClickTime = 0;
-                if (timer) { clearTimeout(timer); timer = null; }
+                if (timer) { clearTimeout(timer);
+                    timer = null; }
             }
 
             function handleWuClick(e) {
@@ -266,28 +464,34 @@
                     clickCount = 1;
                     firstClickTime = now;
                     if (timer) clearTimeout(timer);
-                    timer = setTimeout(function() { resetChallenge(); timer = null; }, 3000);
+                    timer = setTimeout(function() { resetChallenge();
+                        timer = null; }, 3000);
                     return;
                 }
                 clickCount++;
                 if (clickCount >= 10) {
                     unlocked = true;
-                    btn6.classList.add('show');
                     clickableWu.style.cursor = 'default';
                     clickableWu.onclick = null;
-                    if (timer) { clearTimeout(timer); timer = null; }
+                    if (timer) { clearTimeout(timer);
+                        timer = null; }
+                    // 触发彩蛋：💩 特效 + 显示彩色开关
                     createPoops();
+                    createColourfulToggle();
+                    // 不再对 btn6 做闪烁动画
                     return;
                 }
-                if (timer) { clearTimeout(timer); timer = null; }
+                if (timer) { clearTimeout(timer);
+                    timer = null; }
                 var remaining = 3000 - (now - firstClickTime);
                 if (remaining > 0) {
-                    timer = setTimeout(function() { resetChallenge(); timer = null; }, remaining);
+                    timer = setTimeout(function() { resetChallenge();
+                        timer = null; }, remaining);
                 }
             }
             clickableWu.addEventListener('click', handleWuClick);
 
-            // ---- 按钮点击特效 ----
+            // ---------- 按钮点击特效 ----------
             var buttons = document.querySelectorAll('.btn');
             buttons.forEach(function(btn) {
                 btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
@@ -298,16 +502,20 @@
                 btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
             });
 
-            // ---- 占位按钮 ----
+            // ---------- 占位按钮 ----------
             var btn3 = document.getElementById('btn3');
             var btn4 = document.getElementById('btn4');
             var btn5 = document.getElementById('btn5');
-            function delayedAlert(msg) { setTimeout(function() { alert(msg); }, 180); }
-            btn3.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮三功能待添加'); });
-            btn4.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮四功能待添加'); });
-            btn5.addEventListener('click', function(e) { e.preventDefault(); delayedAlert('按钮五功能待添加'); });
 
-            // ---- 物理引擎 + 拖拽 (彩蛋💩) ----
+            function delayedAlert(msg) { setTimeout(function() { alert(msg); }, 180); }
+            btn3.addEventListener('click', function(e) { e.preventDefault();
+                delayedAlert('按钮三功能待添加'); });
+            btn4.addEventListener('click', function(e) { e.preventDefault();
+                delayedAlert('按钮四功能待添加'); });
+            btn5.addEventListener('click', function(e) { e.preventDefault();
+                delayedAlert('按钮五功能待添加'); });
+
+            // ---------- 💩 物理引擎 (彩蛋) ----------
             function createPoops() {
                 var container = document.getElementById('poop-container');
                 var poops = [];
@@ -356,6 +564,7 @@
                             p.vx = 0;
                             p.vy = 0;
                         }
+
                         function onMove(e) {
                             if (!p.isDragging) return;
                             e.preventDefault();
@@ -371,6 +580,7 @@
                             p.el.style.left = p.x + 'px';
                             p.el.style.top = p.y + 'px';
                         }
+
                         function onEnd(e) {
                             if (p.isDragging) {
                                 p.isDragging = false;
@@ -398,10 +608,12 @@
                         p.vx *= friction;
                         p.x += p.vx;
                         p.y += p.vy;
-                        if (p.x < 0) { p.x = 0; p.vx = -p.vx * damping; }
-                        else if (p.x + p.radius > w) { p.x = w - p.radius; p.vx = -p.vx * damping; }
-                        if (p.y < 0) { p.y = 0; p.vy = -p.vy * damping; }
-                        else if (p.y + p.radius > h) { p.y = h - p.radius; p.vy = -p.vy * damping; }
+                        if (p.x < 0) { p.x = 0;
+                            p.vx = -p.vx * damping; } else if (p.x + p.radius > w) { p.x = w - p.radius;
+                            p.vx = -p.vx * damping; }
+                        if (p.y < 0) { p.y = 0;
+                            p.vy = -p.vy * damping; } else if (p.y + p.radius > h) { p.y = h - p.radius;
+                            p.vy = -p.vy * damping; }
                         p.el.style.left = p.x + 'px';
                         p.el.style.top = p.y + 'px';
                     }
@@ -410,74 +622,17 @@
                 requestAnimationFrame(updatePoops);
             }
 
-            // ============================================================
-            // 彩色物理模式 (/?colourful)
-            // ============================================================
-            function isColourfulMode() {
-                return new URLSearchParams(window.location.search).has('colourful');
-            }
-
-            if (isColourfulMode()) {
-                document.body.classList.add('colourful');
-
-                // 1. 高频闪烁颜色
-                var colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4'];
-                function randomColor() {
-                    return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            // ---------- 页面初始化 ----------
+            container.classList.remove('shifted');
+            window.addEventListener('load', function() {
+                setTimeout(function() { container.classList.add('shifted'); }, 500);
+                // 如果 URL 有 ?colourful，启动彩色模式
+                if (isColourfulMode()) {
+                    colourfulActive = true;
+                    startColourfulEffects();
+                    // 但彩蛋未触发，开关不显示，但彩色模式已生效
                 }
-
-                var flashInterval = setInterval(function() {
-                    var bg = randomColor();
-                    document.body.style.backgroundColor = bg;
-                    document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
-                        el.style.color = randomColor();
-                    });
-                    document.querySelectorAll('.btn').forEach(function(el) {
-                        el.style.color = randomColor();
-                        el.style.borderColor = randomColor();
-                    });
-                }, 100);
-
-                // 2. 物理浮动效果（所有主要组件）
-                var elements = document.querySelectorAll('.main-title, .sub, .btn');
-                var physData = [];
-                elements.forEach(function(el) {
-                    var data = {
-                        el: el,
-                        phaseX: Math.random() * Math.PI * 2,
-                        phaseY: Math.random() * Math.PI * 2,
-                        ampX: 4 + Math.random() * 12,
-                        ampY: 4 + Math.random() * 12,
-                        speedX: 0.6 + Math.random() * 1.8,
-                        speedY: 0.6 + Math.random() * 1.8
-                    };
-                    physData.push(data);
-                });
-
-                function animatePhysics() {
-                    var now = performance.now() / 1000;
-                    physData.forEach(function(d) {
-                        var x = Math.sin(now * d.speedX + d.phaseX) * d.ampX;
-                        var y = Math.cos(now * d.speedY + d.phaseY) * d.ampY;
-                        d.el.style.transform = 'translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)';
-                    });
-                    requestAnimationFrame(animatePhysics);
-                }
-                animatePhysics();
-
-                // 3. 修改内部链接，使跳转保持 ?colourful（仅游戏和工具）
-                var internalLinks = document.querySelectorAll('#btn1, #btn2');
-                internalLinks.forEach(function(link) {
-                    if (link.href && link.href !== '#') {
-                        try {
-                            var url = new URL(link.href, window.location.origin);
-                            url.search = 'colourful';
-                            link.href = url.toString();
-                        } catch(e) { /* 忽略无效URL */ }
-                    }
-                });
-                // 其他按钮保持不变（btn3, btn4, btn5, btn6）
-            }
+            });
 
         })();
     </script>
