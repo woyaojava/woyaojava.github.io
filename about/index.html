@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>捂五悟 · 关于</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *:focus, *:focus-visible, img:focus, img:focus-visible { outline: none !important; }
+        img { border: none; outline: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #dce8d5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.05s;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 780px;
+            text-align: center;
+            padding: 1.2rem 0;
+            z-index: 10;
+        }
+
+        .avatar {
+            width: 240px; height: 240px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 12px 28px rgba(45, 74, 45, 0.25);
+            cursor: pointer;
+            transition: opacity 0.15s ease, transform 0.2s ease, border-color 0.05s;
+            margin-bottom: 1.5rem;
+            border: 2px solid #fff;
+        }
+        .avatar:active { transform: scale(0.95); }
+
+        .main-title {
+            font-size: clamp(3.6rem, 12vw, 6rem);
+            font-weight: 700;
+            letter-spacing: 12px;
+            line-height: 1.15;
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 0.1rem 1rem;
+            color: #2d4a2d; user-select: none; margin-bottom: 0.2rem;
+        }
+        .main-title span { color: #2d4a2d; }
+
+        .sub {
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            font-weight: 300; letter-spacing: 12px; text-transform: uppercase;
+            color: #3d5a3d; opacity: 0.6; margin-top: 0.1rem;
+        }
+
+        .desc {
+            font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+            font-weight: 300; color: #3d5a3d; opacity: 0.7;
+            margin-top: 1.8rem; letter-spacing: 2px; line-height: 1.8; max-width: 500px;
+        }
+        .desc .highlight { font-weight: 500; color: #2d4a2d; }
+
+        /* ---- 开放式按钮组 ---- */
+        .button-group {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 1.2rem 2rem; margin-top: 2.2rem; width: 100%; max-width: 500px;
+        }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0.6rem 0.8rem; border: none; background: transparent;
+            color: #2d4a2d; text-decoration: none; font-family: inherit;
+            cursor: pointer; transition: transform 0.12s, opacity 0.15s, color 0.05s;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+            border-radius: 0; min-width: 48px; min-height: 48px;
+        }
+        .btn:hover { opacity: 0.6; }
+        .btn.pressed { transform: scale(0.88); opacity: 0.4; }
+
+        /* SVG 图标样式 */
+        .btn svg { width: 36px; height: 36px; display: block; flex-shrink: 0; }
+
+        /* 品牌色 */
+        .btn-bili { color: #00a1d6; }
+        .btn-gh { color: #24292e; }
+
+        .footer-credit {
+            position: fixed; bottom: 24px; left: 0; width: 100%; text-align: center;
+            font-size: 0.7rem; font-weight: 300; color: #5a7a5a; letter-spacing: 2px;
+            opacity: 0.55; font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            pointer-events: none; z-index: 20;
+        }
+
+        @media (max-width: 480px) {
+            .avatar { width: 180px; height: 180px; }
+            .main-title { letter-spacing: 6px; }
+            .sub { letter-spacing: 8px; }
+            .desc { font-size: 0.9rem; margin-top: 1.2rem; }
+            .footer-credit { font-size: 0.6rem; bottom: 16px; }
+            .btn { padding: 0.4rem 0.6rem; min-width: 40px; min-height: 40px; }
+            .btn svg { width: 30px; height: 30px; }
+            .button-group { gap: 1rem 1.6rem; }
+        }
+
+        .fade-in { animation: fadeUp 0.7s ease forwards; }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 彩色模式 */
+        body.colourful .avatar { border-color: #ff1744; }
+        body.colourful .btn { transition: transform 0.12s, opacity 0.15s, color 0.05s; }
+    </style>
+</head>
+<body>
+    <div class="container fade-in" id="container">
+        <img id="avatar-img" src="img1.jpg" alt="HEYIWEI" class="avatar">
+
+        <h1 class="main-title">
+            <span>捂</span> <span>五</span> <span>悟</span>
+        </h1>
+        <div class="sub">· 关 于 ·</div>
+
+        <div class="desc">
+            这是一个由 <span class="highlight">捂五悟</span> 构建的小站，<br>
+            集游戏、工具与趣味于一体。<br>
+            <span style="opacity:0.6;">更多内容正在路上……</span>
+        </div>
+
+        <div class="button-group" id="buttonGroup">
+            <!-- B站：修正了"扁"的问题，比例更方正的镂空小电视（内部完全透明） -->
+            <a href="https://space.bilibili.com/3546934459500742" target="_blank" class="btn btn-bili" id="btnBili" aria-label="B站">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 两根天线（向内收敛，加粗） -->
+                    <path d="M8.5 2 L10.5 5.5" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" fill="none" />
+                    <path d="M15.5 2 L13.5 5.5" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" fill="none" />
+                    <!-- 主体：收窄拉高，比例更加方正 -->
+                    <rect x="3" y="5.5" width="18" height="13" rx="4.5" stroke="currentColor" stroke-width="2.8" fill="none" />
+                    <!-- 眼睛：居中且保持对称 -->
+                    <ellipse cx="8.5" cy="12" rx="1.8" ry="2.8" fill="currentColor" />
+                    <ellipse cx="15.5" cy="12" rx="1.8" ry="2.8" fill="currentColor" />
+                </svg>
+            </a>
+            <!-- GitHub -->
+            <a href="https://github.com/woyaojava/woyaojava.github.io" target="_blank" class="btn btn-gh" id="btnGh" aria-label="GitHub">
+                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <div class="footer-credit">Powered by DeepSeek</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 头像切换
+            const images = ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg'];
+            let currentIndex = 0;
+            const avatarImg = document.getElementById('avatar-img');
+            avatarImg.addEventListener('click', function() {
+                this.style.opacity = '0';
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % images.length;
+                    this.src = images[currentIndex];
+                    this.style.opacity = '1';
+                }, 150);
+            });
+
+            // 按钮按压反馈
+            const btns = document.querySelectorAll('.btn');
+            btns.forEach(function(btn) {
+                btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
+                btn.addEventListener('mouseup', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('mouseleave', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('touchstart', function(e) { this.classList.add('pressed'); }, { passive: true });
+                btn.addEventListener('touchend', function(e) { this.classList.remove('pressed'); }, { passive: true });
+                btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
+            });
+
+            // 彩色模式
+            function isColourfulMode() { return new URLSearchParams(window.location.search).has('colourful'); }
+            if (isColourfulMode()) {
+                document.body.classList.add('colourful');
+                const colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4', '#ff6d00', '#76ff03'];
+                function randomColor() { return colorPalette[Math.floor(Math.random() * colorPalette.length)]; }
+                const colorEls = [document.body, ...document.querySelectorAll('.main-title span'), document.querySelector('.sub'), document.querySelector('.footer-credit'), document.querySelector('.desc .highlight')];
+                const btnEls = document.querySelectorAll('.btn');
+                let flashInterval = setInterval(function() {
+                    const c1 = randomColor(); const c2 = randomColor();
+                    document.body.style.backgroundColor = c1;
+                    colorEls.forEach(function(el) { if (el) el.style.color = c2; });
+                    avatarImg.style.borderColor = c2;
+                    btnEls.forEach(function(btn) { btn.style.color = c2; });
+                }, 100);
+
+                const floatTargets = [avatarImg, document.querySelector('.main-title'), document.querySelector('.sub'), document.querySelector('.desc'), document.getElementById('buttonGroup')].filter(Boolean);
+                const physData = floatTargets.map(function(el) { return { el, phaseX: Math.random() * Math.PI * 2, phaseY: Math.random() * Math.PI * 2, ampX: 3 + Math.random() * 10, ampY: 3 + Math.random() * 10, speedX: 0.5 + Math.random() * 1.6, speedY: 0.5 + Math.random() * 1.6 }; });
+                function animatePhysics() {
+                    const now = performance.now() / 1000;
+                    physData.forEach(function(d) {
+                        d.el.style.transform = 'translate(' + (Math.sin(now * d.speedX + d.phaseX) * d.ampX).toFixed(1) + 'px, ' + (Math.cos(now * d.speedY + d.phaseY) * d.ampY).toFixed(1) + 'px)';
+                    });
+                    requestAnimationFrame(animatePhysics);
+                }
+                animatePhysics();
+            }
+        });
+    </script>
+</body>
+</html>
