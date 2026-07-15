@@ -2,128 +2,232 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hi 小鸡巴</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>捂五悟 · 游戏</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{
-            background:#e8f5e9;
-            min-height:100vh;
-            overflow:hidden;
-            font-family:Arial,sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *:focus, *:focus-visible { outline: none !important; }
+
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: #dce8d5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            overflow-y: auto;
+            transition: background-color 0.05s;
         }
-        .info{
-            text-align:center;
-            padding:15px;
-            font-size:22px;
-            font-weight:bold;
-            color:#2e7d32;
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 780px;
+            padding-top: 1.2rem;
+            padding-bottom: 4rem;
         }
-        #gameBox{
-            width:100vw;
-            height:80vh;
-            position:relative;
+
+        .title-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 2.5rem;
         }
-        .role{
-            width:100px;
-            cursor:pointer;
-            position:absolute;
-            transition: all 0.2s ease;
+        .main-title {
+            font-size: clamp(3.6rem, 12vw, 6rem);
+            font-weight: 700;
+            letter-spacing: 12px;
+            line-height: 1.15;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.1rem 1rem;
+            color: #2d4a2d;
+            user-select: none;
         }
-        .btn{
-            display:block;
-            margin:10px auto;
-            padding:10px 30px;
-            border:none;
-            background:#4caf50;
-            color:#fff;
-            font-size:18px;
-            border-radius:8px;
-            cursor:pointer;
+        .main-title span { color: #2d4a2d; transition: color 0.05s; }
+        .sub {
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            font-weight: 300;
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            color: #3d5a3d;
+            opacity: 0.6;
+            margin-top: 0.1rem;
+            transition: color 0.05s;
         }
-        .btn:hover{background:#388e3c;}
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 0.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.9rem 1.8rem;
+            border-radius: 60px;
+            background: rgba(45, 74, 45, 0.08);
+            border: 1.5px solid #2d4a2d;
+            color: #2d4a2d;
+            font-size: 1.05rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-decoration: none;
+            text-align: center;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            cursor: pointer;
+            transition: transform 0.12s, background 0.12s, color 0.05s, border-color 0.05s;
+            box-shadow: none;
+            word-break: break-word;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .btn:hover { background: rgba(45, 74, 45, 0.08); transform: none; }
+        .btn.pressed { transform: scale(0.93); background: rgba(45, 74, 45, 0.30); }
+
+        .footer-credit {
+            position: fixed;
+            bottom: 24px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: #5a7a5a;
+            letter-spacing: 2px;
+            opacity: 0.55;
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            pointer-events: none;
+            z-index: 10;
+            transition: color 0.05s;
+        }
+
+        @media (max-width: 480px) {
+            .main-title { letter-spacing: 6px; }
+            .sub { letter-spacing: 8px; }
+            .btn { font-size: 0.9rem; padding: 0.7rem 1.2rem; }
+            .button-group { gap: 1rem; }
+            .container { padding-top: 0.8rem; padding-bottom: 3.5rem; }
+            .title-wrapper { margin-bottom: 1.8rem; }
+            .footer-credit { font-size: 0.6rem; bottom: 16px; }
+        }
+
+        .fade-in { animation: fadeUp 0.7s ease forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
+
+        body.colourful .main-title,
+        body.colourful .sub,
+        body.colourful .btn {
+            will-change: transform;
+        }
     </style>
 </head>
 <body>
-    <div class="info">
-        分数：<span id="score">0</span> | 剩余时间：<span id="time">30</span>秒
+    <div class="container fade-in">
+        <div class="title-wrapper">
+            <h1 class="main-title"><span>捂</span><span>五</span><span>悟</span></h1>
+            <div class="sub">· 游 戏 入 口 ·</div>
+        </div>
+        <div class="button-group">
+            <a href="https://woyaojava.github.io/game/questionmarkmystery" target="_blank" class="btn">问号秘境</a>
+            <a href="https://woyaojava.github.io/game/qmmnew" target="_blank" class="btn">问号秘境 新</a>
+            <a href="https://woyaojava.github.io/game/xiaojiguolnchestn" target="_blank" class="btn">打小鸡裹 lnchestn</a>
+            <a href="https://woyaojava.github.io/game/hi1" target="_blank" class="btn">hi 小 ih</a>
+            <a href="https://woyaojava.github.io/game/hi2" target="_blank" class="btn">hi 小鸡(缆车皮肤+手感优化)</a>
+        </div>
     </div>
-    <button class="btn" id="startBtn">开始游戏</button>
-    <div id="gameBox"></div>
+    <div class="footer-credit">Powered by DeepSeek</div>
 
-<script>
+    <script>
+        (function() {
+            var buttons = document.querySelectorAll('.btn');
+            buttons.forEach(function(btn) {
+                btn.addEventListener('mousedown', function(e) { this.classList.add('pressed'); });
+                btn.addEventListener('mouseup', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('mouseleave', function(e) { this.classList.remove('pressed'); });
+                btn.addEventListener('touchstart', function(e) { this.classList.add('pressed'); }, { passive: true });
+                btn.addEventListener('touchend', function(e) { this.classList.remove('pressed'); }, { passive: true });
+                btn.addEventListener('touchcancel', function(e) { this.classList.remove('pressed'); }, { passive: true });
+            });
 
-const gifSrc = "https://i1.hdslb.com/bfs/face/0410b0c9a49fe02dd8403c99a72753abfc929112.jpg@168w_168h_1c.webp"; 
+            // ============================================================
+            // 彩色物理模式 (/?colourful)
+            // ============================================================
+            function isColourfulMode() {
+                return new URLSearchParams(window.location.search).has('colourful');
+            }
 
-let score = 0;
-let time = 30;
-let timer = null;
-let gameRun = false;
-const gameBox = document.getElementById("gameBox");
-const scoreDom = document.getElementById("score");
-const timeDom = document.getElementById("time");
-const startBtn = document.getElementById("startBtn");
+            if (isColourfulMode()) {
+                document.body.classList.add('colourful');
 
-function getRandomPos(){
-    let w = window.innerWidth - 120;
-    let h = window.innerHeight * 0.8 - 120;
-    return {
-        x:Math.random()*w,
-        y:Math.random()*h
-    }
-}
+                var colorPalette = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#2979ff', '#d500f9', '#ff4081', '#00bcd4'];
+                function randomColor() {
+                    return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                }
 
-function createRole(){
-    let img = document.createElement("img");
-    img.src = gifSrc;
-    img.className = "role";
-    let pos = getRandomPos();
-    img.style.left = pos.x + "px";
-    img.style.top = pos.y + "px";
-    
-    // 按下瞬间触发（鼠标、手指都支持）
-    function onPress() {
-        score++;
-        scoreDom.innerText = score;
-        // 瞬移
-        let newPos = getRandomPos();
-        img.style.left = newPos.x + "px";
-        img.style.top = newPos.y + "px";
-    }
-    
-    img.onmousedown = onPress;
-    img.ontouchstart = onPress;
-    
-    gameBox.appendChild(img);
-}
+                setInterval(function() {
+                    var bg = randomColor();
+                    document.body.style.backgroundColor = bg;
+                    document.querySelectorAll('.main-title span, .sub, .footer-credit').forEach(function(el) {
+                        el.style.color = randomColor();
+                    });
+                    document.querySelectorAll('.btn').forEach(function(el) {
+                        el.style.color = randomColor();
+                        el.style.borderColor = randomColor();
+                    });
+                }, 100);
 
-function clearRole(){
-    gameBox.innerHTML = "";
-}
+                var elements = document.querySelectorAll('.main-title, .sub, .btn');
+                var physData = [];
+                elements.forEach(function(el) {
+                    physData.push({
+                        el: el,
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2,
+                        ampX: 4 + Math.random() * 12,
+                        ampY: 4 + Math.random() * 12,
+                        speedX: 0.6 + Math.random() * 1.8,
+                        speedY: 0.6 + Math.random() * 1.8
+                    });
+                });
 
-startBtn.onclick = function(){
-    if(gameRun)return;
-    gameRun = true;
-    score = 0;
-    time = 30;
-    scoreDom.innerText = 0;
-    timeDom.innerText = 30;
-    clearRole();
-    // 生成3个小人
-    for(let i=0;i<3;i++) createRole();
+                function animatePhysics() {
+                    var now = performance.now() / 1000;
+                    physData.forEach(function(d) {
+                        var x = Math.sin(now * d.speedX + d.phaseX) * d.ampX;
+                        var y = Math.cos(now * d.speedY + d.phaseY) * d.ampY;
+                        d.el.style.transform = 'translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)';
+                    });
+                    requestAnimationFrame(animatePhysics);
+                }
+                animatePhysics();
 
-    // 倒计时
-    timer = setInterval(()=>{
-        time--;
-        timeDom.innerText = time;
-        if(time <= 0){
-            clearInterval(timer);
-            gameRun = false;
-            alert(`游戏结束！你的得分：${score} 分`);
-            clearRole();
-        }
-    },1000)
-}
-</script>
+                // 修改所有游戏链接，使跳转保持 ?colourful
+                var gameLinks = document.querySelectorAll('.btn');
+                gameLinks.forEach(function(link) {
+                    if (link.href) {
+                        try {
+                            var url = new URL(link.href, window.location.origin);
+                            url.search = 'colourful';
+                            link.href = url.toString();
+                        } catch(e) {}
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
